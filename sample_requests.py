@@ -44,7 +44,7 @@ def request_1():
     """"""
     url = f"{BASE_URL}/change/medicalnetwork/claimstatus/v2"
     headers = {
-        "X-API-Key": API_KEY,
+        "Authorization": API_KEY,
         "Content-Type": "application/json"
     }
     payload = {
@@ -69,7 +69,7 @@ def request_2():
     """"""
     url = f"{BASE_URL}/change/medicalnetwork/claimstatus/v2/raw-x12"
     headers = {
-        "X-API-Key": API_KEY,
+        "Authorization": API_KEY,
         "Content-Type": "application/json"
     }
     payload = {
@@ -84,7 +84,7 @@ def request_3():
     """"""
     url = f"{BASE_URL}/change/medicalnetwork/eligibility/v3"
     headers = {
-        "X-API-Key": API_KEY,
+        "Authorization": API_KEY,
         "Content-Type": "application/json"
     }
     payload = {
@@ -101,7 +101,7 @@ def request_4():
     """"""
     url = f"{BASE_URL}/change/medicalnetwork/eligibility/v3/raw-x12"
     headers = {
-        "X-API-Key": API_KEY,
+        "Authorization": API_KEY,
         "Content-Type": "application/json"
     }
     payload = {
@@ -116,7 +116,7 @@ def request_5():
     """"""
     url = f"{BASE_URL}/change/medicalnetwork/institutionalclaims/v1/raw-x12-submission"
     headers = {
-        "X-API-Key": API_KEY,
+        "Authorization": API_KEY,
         "Content-Type": "application/json"
     }
     payload = {
@@ -131,7 +131,7 @@ def request_6():
     """"""
     url = f"{BASE_URL}/change/medicalnetwork/institutionalclaims/v1/submission"
     headers = {
-        "X-API-Key": API_KEY,
+        "Authorization": API_KEY,
         "Content-Type": "application/json"
     }
     payload = {
@@ -191,7 +191,7 @@ def request_7():
     """"""
     url = f"{BASE_URL}/change/medicalnetwork/professionalclaims/v3/raw-x12-submission"
     headers = {
-        "X-API-Key": API_KEY,
+        "Authorization": API_KEY,
         "Content-Type": "application/json"
     }
     payload = {
@@ -206,7 +206,7 @@ def request_8():
     """"""
     url = f"{BASE_URL}/change/medicalnetwork/professionalclaims/v3/submission"
     headers = {
-        "X-API-Key": API_KEY,
+        "Authorization": API_KEY,
         "Content-Type": "application/json"
     }
     payload = {
@@ -263,7 +263,7 @@ def request_9():
     """"""
     url = f"{BASE_URL}/change/medicalnetwork/reports/v2/123456789/277"
     headers = {
-        "X-API-Key": API_KEY,
+        "Authorization": API_KEY,
         "Content-Type": "application/json"
     }
     response = requests.get(url, headers=headers)
@@ -275,7 +275,7 @@ def request_10():
     """"""
     url = f"{BASE_URL}/change/medicalnetwork/reports/v2/123456789/835"
     headers = {
-        "X-API-Key": API_KEY,
+        "Authorization": API_KEY,
         "Content-Type": "application/json"
     }
     response = requests.get(url, headers=headers)
@@ -287,7 +287,7 @@ def request_11():
     """"""
     url = f"{BASE_URL}/coordination-of-benefits"
     headers = {
-        "X-API-Key": API_KEY,
+        "Authorization": API_KEY,
         "Content-Type": "application/json"
     }
     payload = {
@@ -311,7 +311,7 @@ def request_12():
     """"""
     url = f"{BASE_URL}/dental-claims/raw-x12-submission"
     headers = {
-        "X-API-Key": API_KEY,
+        "Authorization": API_KEY,
         "Content-Type": "application/json"
     }
     payload = {
@@ -326,7 +326,7 @@ def request_13():
     """"""
     url = f"{BASE_URL}/dental-claims/submission"
     headers = {
-        "X-API-Key": API_KEY,
+        "Authorization": API_KEY,
         "Content-Type": "application/json"
     }
     payload = {
@@ -366,7 +366,7 @@ def request_14():
     """"""
     url = f"{BASE_URL}/export/pdf"
     headers = {
-        "X-API-Key": API_KEY,
+        "Authorization": API_KEY,
         "Content-Type": "application/json"
     }
     params = {
@@ -381,7 +381,7 @@ def request_15():
     """"""
     url = f"{BASE_URL}/export/123456789/1500/pdf"
     headers = {
-        "X-API-Key": API_KEY,
+        "Authorization": API_KEY,
         "Content-Type": "application/json"
     }
     response = requests.get(url, headers=headers)
@@ -393,7 +393,7 @@ def request_16():
     """"""
     url = f"{BASE_URL}/insurance-discovery/check/v1"
     headers = {
-        "X-API-Key": API_KEY,
+        "Authorization": API_KEY,
         "Content-Type": "application/json"
     }
     payload = {
@@ -414,7 +414,7 @@ def request_17():
     """"""
     url = f"{BASE_URL}/insurance-discovery/check/v1/123456789"
     headers = {
-        "X-API-Key": API_KEY,
+        "Authorization": API_KEY,
         "Content-Type": "application/json"
     }
     response = requests.get(url, headers=headers)
@@ -426,7 +426,7 @@ def request_18():
     """"""
     url = f"{BASE_URL}/payer/123456789"
     headers = {
-        "X-API-Key": API_KEY,
+        "Authorization": API_KEY,
         "Content-Type": "application/json"
     }
     response = requests.get(url, headers=headers)
@@ -438,7 +438,7 @@ def request_19():
     """"""
     url = f"{BASE_URL}/payers"
     headers = {
-        "X-API-Key": API_KEY,
+        "Authorization": API_KEY,
         "Content-Type": "application/json"
     }
     response = requests.get(url, headers=headers)
@@ -450,7 +450,7 @@ def request_20():
     """"""
     url = f"{BASE_URL}/payers/csv"
     headers = {
-        "X-API-Key": API_KEY,
+        "Authorization": API_KEY,
         "Content-Type": "application/json"
     }
     response = requests.get(url, headers=headers)
@@ -462,7 +462,7 @@ def request_21():
     """"""
     url = f"{BASE_URL}/payers/search"
     headers = {
-        "X-API-Key": API_KEY,
+        "Authorization": API_KEY,
         "Content-Type": "application/json"
     }
     response = requests.get(url, headers=headers)

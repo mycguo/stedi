@@ -6,7 +6,7 @@
     "description": "Submit a 276/277 real-time claim status check in JSON format",
     "url": "https://healthcare.us.stedi.com/change/medicalnetwork/claimstatus/v2",
     "headers": {
-      "X-API-Key": "YOUR_API_KEY_HERE",
+      "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
     },
     "query_params": {},
@@ -32,7 +32,7 @@
     "description": "Submit a 276/277 real-time claim status check in raw X12 EDI format",
     "url": "https://healthcare.us.stedi.com/change/medicalnetwork/claimstatus/v2/raw-x12",
     "headers": {
-      "X-API-Key": "YOUR_API_KEY_HERE",
+      "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
     },
     "query_params": {},
@@ -48,7 +48,7 @@
     "description": "Submit a real-time 270/271 eligibility check in JSON format",
     "url": "https://healthcare.us.stedi.com/change/medicalnetwork/eligibility/v3",
     "headers": {
-      "X-API-Key": "YOUR_API_KEY_HERE",
+      "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
     },
     "query_params": {},
@@ -66,7 +66,7 @@
     "description": "Submit a real-time 270/271 eligibility check in raw X12 EDI format",
     "url": "https://healthcare.us.stedi.com/change/medicalnetwork/eligibility/v3/raw-x12",
     "headers": {
-      "X-API-Key": "YOUR_API_KEY_HERE",
+      "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
     },
     "query_params": {},
@@ -82,7 +82,7 @@
     "description": "Submit an 837I institutional claim in raw X12 EDI format",
     "url": "https://healthcare.us.stedi.com/change/medicalnetwork/institutionalclaims/v1/raw-x12-submission",
     "headers": {
-      "X-API-Key": "YOUR_API_KEY_HERE",
+      "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
     },
     "query_params": {},
@@ -98,7 +98,7 @@
     "description": "Submit an 837I institutional claim in JSON format",
     "url": "https://healthcare.us.stedi.com/change/medicalnetwork/institutionalclaims/v1/submission",
     "headers": {
-      "X-API-Key": "YOUR_API_KEY_HERE",
+      "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
     },
     "query_params": {},
@@ -159,7 +159,7 @@
     "description": "Submit an 837P professional claim in raw X12 EDI format",
     "url": "https://healthcare.us.stedi.com/change/medicalnetwork/professionalclaims/v3/raw-x12-submission",
     "headers": {
-      "X-API-Key": "YOUR_API_KEY_HERE",
+      "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
     },
     "query_params": {},
@@ -175,7 +175,7 @@
     "description": "Submit an 837P professional claim in JSON format",
     "url": "https://healthcare.us.stedi.com/change/medicalnetwork/professionalclaims/v3/submission",
     "headers": {
-      "X-API-Key": "YOUR_API_KEY_HERE",
+      "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
     },
     "query_params": {},
@@ -233,7 +233,7 @@
     "description": "Retrieve a 277CA claim acknowledgment in JSON format",
     "url": "https://healthcare.us.stedi.com/change/medicalnetwork/reports/v2/123456789/277",
     "headers": {
-      "X-API-Key": "YOUR_API_KEY_HERE",
+      "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
     },
     "query_params": {},
@@ -249,7 +249,7 @@
     "description": "Retrieve an 835 Electronic Remittance Advice (ERA) in JSON format",
     "url": "https://healthcare.us.stedi.com/change/medicalnetwork/reports/v2/123456789/835",
     "headers": {
-      "X-API-Key": "YOUR_API_KEY_HERE",
+      "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
     },
     "query_params": {},
@@ -265,7 +265,7 @@
     "description": "Submit a coordination of benefits (COB) check in JSON format",
     "url": "https://healthcare.us.stedi.com/coordination-of-benefits",
     "headers": {
-      "X-API-Key": "YOUR_API_KEY_HERE",
+      "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
     },
     "query_params": {},
@@ -290,7 +290,7 @@
     "description": "Submit an 837D dental claim in raw X12 EDI format",
     "url": "https://healthcare.us.stedi.com/dental-claims/raw-x12-submission",
     "headers": {
-      "X-API-Key": "YOUR_API_KEY_HERE",
+      "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
     },
     "query_params": {},
@@ -306,7 +306,7 @@
     "description": "Submit an 837D dental claim in JSON format",
     "url": "https://healthcare.us.stedi.com/dental-claims/submission",
     "headers": {
-      "X-API-Key": "YOUR_API_KEY_HERE",
+      "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
     },
     "query_params": {},
@@ -347,7 +347,7 @@
     "description": "Retrieve a Stedi generatedCMS-1500 Claim Form PDF for a submitted 837P (professional) claim by business identifier",
     "url": "https://healthcare.us.stedi.com/export/pdf",
     "headers": {
-      "X-API-Key": "YOUR_API_KEY_HERE",
+      "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
     },
     "query_params": {
@@ -363,7 +363,7 @@
     "description": "Retrieve the generated CMS-1500 Claim Form PDF for a submitted 837P professional claim",
     "url": "https://healthcare.us.stedi.com/export/123456789/1500/pdf",
     "headers": {
-      "X-API-Key": "YOUR_API_KEY_HERE",
+      "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
     },
     "query_params": {},
@@ -379,7 +379,7 @@
     "description": "Submit an insurance discovery check in JSON format",
     "url": "https://healthcare.us.stedi.com/insurance-discovery/check/v1",
     "headers": {
-      "X-API-Key": "YOUR_API_KEY_HERE",
+      "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
     },
     "query_params": {},
@@ -401,7 +401,7 @@
     "description": "Retrieve insurance discovery check results by `discoveryId`",
     "url": "https://healthcare.us.stedi.com/insurance-discovery/check/v1/123456789",
     "headers": {
-      "X-API-Key": "YOUR_API_KEY_HERE",
+      "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
     },
     "query_params": {},
@@ -417,7 +417,7 @@
     "description": "Retrieve a single payer record by its Stedi payer ID.",
     "url": "https://healthcare.us.stedi.com/payer/123456789",
     "headers": {
-      "X-API-Key": "YOUR_API_KEY_HERE",
+      "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
     },
     "query_params": {},
@@ -433,7 +433,7 @@
     "description": "List Stedi's supported payers in JSON format",
     "url": "https://healthcare.us.stedi.com/payers",
     "headers": {
-      "X-API-Key": "YOUR_API_KEY_HERE",
+      "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
     },
     "query_params": {},
@@ -447,7 +447,7 @@
     "description": "List Stedi's supported payers in CSV format",
     "url": "https://healthcare.us.stedi.com/payers/csv",
     "headers": {
-      "X-API-Key": "YOUR_API_KEY_HERE",
+      "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
     },
     "query_params": {},
@@ -461,7 +461,7 @@
     "description": "Search for payers by name, ID, or alias.",
     "url": "https://healthcare.us.stedi.com/payers/search",
     "headers": {
-      "X-API-Key": "YOUR_API_KEY_HERE",
+      "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
     },
     "query_params": {},

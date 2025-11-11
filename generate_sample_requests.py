@@ -186,7 +186,7 @@ class SampleRequestGenerator:
             request_info["body"] = body
         
         # Add authentication header
-        request_info["headers"]["X-API-Key"] = "YOUR_API_KEY_HERE"
+        request_info["headers"]["Authorization"] = "YOUR_API_KEY_HERE"
         request_info["headers"]["Content-Type"] = "application/json"
         
         return request_info
@@ -287,7 +287,7 @@ class SampleRequestGenerator:
                 f.write(f'    """{req.get("summary", "Sample request")}"""\n')
                 f.write(f'    url = f"{{BASE_URL}}{req["path"]}"\n')
                 f.write(f'    headers = {{\n')
-                f.write(f'        "X-API-Key": API_KEY,\n')
+                f.write(f'        "Authorization": API_KEY,\n')
                 f.write(f'        "Content-Type": "application/json"\n')
                 f.write(f'    }}\n')
                 

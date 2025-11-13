@@ -9,8 +9,8 @@ import json
 import argparse
 import sys
 from typing import Dict, Callable, Any
-
-API_KEY = "test_JFyME6G.VSSis3ZG4m1iFPds82ndIc8m"
+API_KEY = "miUeY1a.lp5y3QhegevuPqoRAM5mnsBB"
+#API_KEY = "test_lxoEVa3.ZA5zWb9Y1EPDAUgXdP2S1HVf"
 BASE_URL = "https://healthcare.us.stedi.com/2024-04-01"
 
 # Registry of all available requests
@@ -88,9 +88,17 @@ def request_3():
         "Content-Type": "application/json"
     }
     payload = {
-        "provider": {},
-        "subscriber": {},
-        "tradingPartnerServiceId": "123456789"
+        "provider": {
+                "npi": "87726",
+                "organizationName": "UnitedHealthcare"
+        },
+        "subscriber": {
+                "firstName": "JOHN",
+                "lastName": "DOE",
+                "memberId": "123456789",
+                "dateOfBirth": "19800101"
+        },
+        "tradingPartnerServiceId": "10379"
 }
     response = requests.post(url, headers=headers, json=payload)
     return response
@@ -251,7 +259,11 @@ def request_8():
         "submitter": {
                 "contactInformation": {}
         },
-        "subscriber": {},
+        "subscriber": {
+                "firstName": "JOHN",
+                "lastName": "DOE",
+                "memberId": "123456789"
+        },
         "tradingPartnerServiceId": "123456789"
 }
     response = requests.post(url, headers=headers, json=payload)
@@ -354,7 +366,11 @@ def request_13():
         "submitter": {
                 "contactInformation": {}
         },
-        "subscriber": {},
+        "subscriber": {
+                "firstName": "JOHN",
+                "lastName": "DOE",
+                "memberId": "123456789"
+        },
         "tradingPartnerServiceId": "123456789"
 }
     response = requests.post(url, headers=headers, json=payload)

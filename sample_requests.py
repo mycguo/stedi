@@ -77,7 +77,8 @@ def request_1():
     payload = {
         "providers": [
                 {
-                        "providerType": "BillingProvider"
+                        "providerType": "BillingProvider",
+                        "npi": "1234567890"
                 }
         ],
         "subscriber": {
@@ -85,7 +86,7 @@ def request_1():
                 "lastName": "EXAMPLE",
                 "memberId": "123456789"
         },
-        "tradingPartnerServiceId": "123456789"
+        "tradingPartnerServiceId": "60054"
 }
     response = requests.post(url, headers=headers, json=payload)
     return response
@@ -215,7 +216,7 @@ def request_6():
                 "lastName": "EXAMPLE",
                 "paymentResponsibilityLevelCode": "A"
         },
-        "tradingPartnerServiceId": "123456789"
+        "tradingPartnerServiceId": "10379"
 }
     response = requests.post(url, headers=headers, json=payload)
     return response
@@ -291,7 +292,7 @@ def request_8():
                 "lastName": "DOE",
                 "memberId": "123456789"
         },
-        "tradingPartnerServiceId": "123456789"
+        "tradingPartnerServiceId": "10379"
 }
     response = requests.post(url, headers=headers, json=payload)
     return response
@@ -332,14 +333,15 @@ def request_11():
     payload = {
         "encounter": {},
         "provider": {
-                "npi": "example"
+                "npi": "87726",
+                "organizationName": "UnitedHealthcare"
         },
         "subscriber": {
                 "dateOfBirth": "20240101",
                 "firstName": "EXAMPLE",
                 "lastName": "EXAMPLE"
         },
-        "tradingPartnerServiceId": "123456789"
+        "tradingPartnerServiceId": "10379"
 }
     response = requests.post(url, headers=headers, json=payload)
     return response
@@ -398,7 +400,7 @@ def request_13():
                 "lastName": "DOE",
                 "memberId": "123456789"
         },
-        "tradingPartnerServiceId": "123456789"
+        "tradingPartnerServiceId": "10379"
 }
     response = requests.post(url, headers=headers, json=payload)
     return response
@@ -441,7 +443,8 @@ def request_16():
     }
     payload = {
         "provider": {
-                "npi": "example"
+                "npi": "87726",
+                "organizationName": "UnitedHealthcare"
         },
         "subscriber": {
                 "firstName": "EXAMPLE",

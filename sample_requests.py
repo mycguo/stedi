@@ -191,8 +191,45 @@ def request_5():
         "Authorization": get_api_key(),
         "Content-Type": "application/json"
     }
+    # Basic X12 837I Institutional Claim
+    x12_content = """ISA*00*          *00*          *ZZ*STEDI          *01*123456789      *250101*1200*^*00501*000000001*0*P*:~
+GS*HC*STEDI*123456789*20250101*1200*1*X*005010X223A2~
+ST*837*0001*005010X223A2~
+BHT*0019*00*TEST123456*20250101*1200*CH~
+NM1*41*2*EXAMPLE RECEIVER*****46*10379~
+PER*IC*CONTACT*TE*5551234567~
+NM1*40*2*EXAMPLE SUBMITTER*****46*123456789~
+HL*1**20*1~
+PRV*BI*PXC*207Q00000X~
+NM1*85*2*EXAMPLE BILLING PROVIDER*****XX*1234567890~
+N3*123 MAIN ST~
+N4*CITY*ST*12345~
+REF*EI*123456789~
+HL*2*1*22*0~
+SBR*P*18*GROUP123*ACME INSURANCE*****CI~
+NM1*IL*1*DOE*JOHN****MI*123456789~
+N3*456 PATIENT ST~
+N4*CITY*ST*12345~
+DMG*D8*19800101*M~
+NM1*PR*2*10379*****PI*10379~
+CLM*123456*100.00****11:A:1*A*Y~
+DTP*050*RD8*20250101-20250101~
+DTP*435*RD8*20250101-20250101~
+DTP*434*D8*20250101~
+DTP*096*RD8*20250101-20250101~
+DTP*471*TM*1200~
+CL1*1*1*1~
+REF*D9*123456~
+HI*BK:Z0000~
+LX*1~
+SV2*0450*HC*99213*UN*100.00~
+DTP*472*D8*20250101~
+SE*30*0001~
+GE*1*1~
+IEA*1*000000001~"""
+    
     payload = {
-        "x12": "example"
+        "x12": x12_content
 }
     response = requests.post(url, headers=headers, json=payload)
     return response
@@ -209,7 +246,7 @@ def request_6():
     payload = {
         "claimInformation": {
                 "benefitsAssignmentCertificationIndicator": "N",
-                "claimChargeAmount": "example",
+                "claimChargeAmount": "100.00",
                 "claimCodeInformation": {
                         "admissionTypeCode": "e",
                         "patientStatusCode": "ex"
@@ -231,19 +268,26 @@ def request_6():
                 "serviceLines": [
                         {
                                 "institutionalService": {
-                                        "lineItemChargeAmount": "example",
+                                        "lineItemChargeAmount": "100.00",
                                         "measurementUnit": "DA",
-                                        "serviceLineRevenueCode": "example",
-                                        "serviceUnitCount": "example"
+                                        "serviceLineRevenueCode": "0450",
+                                        "serviceUnitCount": "1"
                                 }
                         }
                 ]
+        },
+        "billing": {
+                "npi": "1234567890",
+                "organizationName": "EXAMPLE BILLING PROVIDER"
         },
         "receiver": {
                 "organizationName": "EXAMPLE"
         },
         "submitter": {
-                "contactInformation": {},
+                "contactInformation": {
+                        "communicationNumberQualifier": "TE",
+                        "communicationNumber": "5551234567"
+                },
                 "organizationName": "EXAMPLE",
                 "taxId": "123456789"
         },
@@ -285,12 +329,12 @@ def request_8():
         "billing": {},
         "claimInformation": {
                 "benefitsAssignmentCertificationIndicator": "N",
-                "claimChargeAmount": "example",
+                "claimChargeAmount": "100.00",
                 "claimFilingCode": "11",
                 "claimFrequencyCode": "1",
                 "healthCareCodeInformation": [
                         {
-                                "diagnosisCode": "example",
+                                "diagnosisCode": "Z0000",
                                 "diagnosisTypeCode": "BK"
                         }
                 ],
@@ -303,14 +347,14 @@ def request_8():
                                 "professionalService": {
                                         "compositeDiagnosisCodePointers": {
                                                 "diagnosisCodePointers": [
-                                                        "example"
+                                                        "1"
                                                 ]
                                         },
-                                        "lineItemChargeAmount": "example",
+                                        "lineItemChargeAmount": "100.00",
                                         "measurementUnit": "MJ",
-                                        "procedureCode": "example",
+                                        "procedureCode": "99213",
                                         "procedureIdentifier": "ER",
-                                        "serviceUnitCount": "example"
+                                        "serviceUnitCount": "1"
                                 },
                                 "serviceDate": "20240101"
                         }
@@ -334,10 +378,13 @@ def request_8():
     return response
 
 
-# Request 9: GET /change/medicalnetwork/reports/v2/123456789/277
+# Request 9: GET /change/medicalnetwork/reports/v2/{eligibilitySearchId}/277
 def request_9():
     """"""
-    url = f"{BASE_URL}/change/medicalnetwork/reports/v2/123456789/277"
+    # Note: This endpoint requires a valid eligibilitySearchId (UUID format) from a previous eligibility check
+    # Using a sample UUID format - replace with actual eligibilitySearchId from Request 3 response
+    eligibility_search_id = "019a7b3c-5b91-7ae1-8213-0bd5ff204a6a"
+    url = f"{BASE_URL}/change/medicalnetwork/reports/v2/{eligibility_search_id}/277"
     headers = {
         "Authorization": get_api_key(),
         "Content-Type": "application/json"
@@ -346,10 +393,13 @@ def request_9():
     return response
 
 
-# Request 10: GET /change/medicalnetwork/reports/v2/123456789/835
+# Request 10: GET /change/medicalnetwork/reports/v2/{eligibilitySearchId}/835
 def request_10():
     """"""
-    url = f"{BASE_URL}/change/medicalnetwork/reports/v2/123456789/835"
+    # Note: This endpoint requires a valid eligibilitySearchId (UUID format) from a previous eligibility check
+    # Using a sample UUID format - replace with actual eligibilitySearchId from Request 3 response
+    eligibility_search_id = "019a7b3c-5b91-7ae1-8213-0bd5ff204a6a"
+    url = f"{BASE_URL}/change/medicalnetwork/reports/v2/{eligibility_search_id}/835"
     headers = {
         "Authorization": get_api_key(),
         "Content-Type": "application/json"

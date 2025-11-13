@@ -187,13 +187,14 @@ IEA*1*000000001~"""
 
 # Request 5: POST /change/medicalnetwork/institutionalclaims/v1/raw-x12-submission
 def request_5():
-    """"""
+    """Submit an 837I institutional claim in raw X12 EDI format"""
     url = f"{BASE_URL}/change/medicalnetwork/institutionalclaims/v1/raw-x12-submission"
     headers = {
         "Authorization": get_api_key(),
         "Content-Type": "application/json"
     }
-    # Basic X12 837I Institutional Claim
+    # X12 837I Institutional Claim (5010 format)
+    # This is a complete X12 EDI transaction set for institutional claims
     x12_content = """ISA*00*          *00*          *ZZ*STEDI          *01*123456789      *250101*1200*^*00501*000000001*0*P*:~
 GS*HC*STEDI*123456789*20250101*1200*1*X*005010X223A2~
 ST*837*0001*005010X223A2~
@@ -203,7 +204,7 @@ PER*IC*CONTACT*TE*5551234567~
 NM1*40*2*EXAMPLE SUBMITTER*****46*123456789~
 HL*1**20*1~
 PRV*BI*PXC*207Q00000X~
-NM1*85*2*EXAMPLE BILLING PROVIDER*****XX*1234567890~
+NM1*85*2*EXAMPLE BILLING PROVIDER*****XX*1932808896~
 N3*123 MAIN ST~
 N4*CITY*ST*12345~
 REF*EI*123456789~
@@ -229,7 +230,7 @@ IEA*1*000000001~"""
     
     payload = {
         "x12": x12_content
-}
+    }
     response = requests.post(url, headers=headers, json=payload)
     return response
 

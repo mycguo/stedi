@@ -10,8 +10,13 @@ import time
 import inspect
 import ast
 import re
+import logging
 from stedi_request import REQUESTS, BASE_URL, get_api_key
 import stedi_request
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 # Initialize request functions
 for req_id in REQUESTS:
@@ -20,74 +25,263 @@ for req_id in REQUESTS:
 
 def extract_payload_from_function(func):
     """Extract payload from a request function."""
+    logger.debug(f"extract_payload_from_function called for {func.__name__ if func else 'None'}")
     if not func:
+        logger.debug("Function is None, returning None")
         return None
     
     try:
         source = inspect.getsource(func)
+        logger.debug(f"Got source code, length: {len(source)}")
         
-        # Find payload assignment
-        if 'payload = {' not in source:
+        # Find payload assignment - check for both 'payload = {' and 'payload={' patterns
+        if 'payload = {' not in source and 'payload={' not in source:
+            logger.debug("No 'payload = {' or 'payload={' found in source")
             return None
+        logger.debug("Found payload assignment in source")
         
         # Extract the payload dictionary
         lines = source.split('\n')
         payload_start_idx = None
         
         for i, line in enumerate(lines):
-            if 'payload = {' in line:
+            if 'payload = {' in line or 'payload={' in line:
                 payload_start_idx = i
                 break
         
         if payload_start_idx is None:
+            logger.debug("payload_start_idx is None")
             return None
+        logger.debug(f"Found payload at line {payload_start_idx + 1}")
         
         # Find the end of the payload dict by counting braces
+        # Handle multiline strings (triple quotes) and nested structures
         payload_lines = []
         brace_count = 0
         in_payload = False
+        in_triple_quote = False
+        quote_char = None
         
         for i in range(payload_start_idx, len(lines)):
             line = lines[i]
-            if 'payload = {' in line:
+            if 'payload = {' in line or 'payload={' in line:
                 in_payload = True
                 # Extract just the dict part
-                dict_start = line.find('{')
+                dict_start = max(line.find('payload = {'), line.find('payload={'))
+                if dict_start == -1:
+                    dict_start = line.find('{')
+                else:
+                    dict_start = line.find('{', dict_start)
                 payload_lines.append(line[dict_start:])
                 brace_count = line[dict_start:].count('{') - line[dict_start:].count('}')
             elif in_payload:
+                # Check for triple quotes (multiline strings)
+                stripped = line.strip()
+                if '"""' in stripped or "'''" in stripped:
+                    # Count triple quotes
+                    triple_double = stripped.count('"""')
+                    triple_single = stripped.count("'''")
+                    if triple_double % 2 == 1:
+                        in_triple_quote = not in_triple_quote
+                        quote_char = '"""'
+                    elif triple_single % 2 == 1:
+                        in_triple_quote = not in_triple_quote
+                        quote_char = "'''"
+                
+                # Don't count braces inside triple-quoted strings
+                if not in_triple_quote:
+                    brace_count += line.count('{') - line.count('}')
+                
                 payload_lines.append(line)
-                brace_count += line.count('{') - line.count('}')
-                if brace_count == 0:
+                
+                if brace_count == 0 and not in_triple_quote:
                     break
         
         if not payload_lines:
+            logger.debug("No payload_lines extracted")
             return None
+        logger.debug(f"Extracted {len(payload_lines)} lines of payload code")
         
-        # Reconstruct payload code
-        payload_code = '\n'.join(payload_lines)
+        # Reconstruct payload code (with indentation) for variable detection
+        payload_code_with_indent = '\n'.join(payload_lines)
+        
+        # Extract variable definitions that might be used in payload (like x12_content)
+        # Look for variable assignments before payload, especially multiline strings
+        variable_definitions = []
+        i = 0
+        while i < payload_start_idx:
+            line = lines[i]
+            stripped = line.strip()
+            
+            # Skip comments and empty lines
+            if stripped.startswith('#') or not stripped:
+                i += 1
+                continue
+            
+            # Look for variable assignments with triple-quoted strings (multiline)
+            if '=' in stripped and ('"""' in stripped or "'''" in stripped):
+                var_parts = stripped.split('=', 1)
+                if len(var_parts) == 2:
+                    var_name = var_parts[0].strip()
+                    # Check if variable name is valid and might be used in payload
+                    if var_name and var_name.replace('_', '').isalnum():
+                        # Check if this variable is referenced in payload_code
+                        if var_name in payload_code_with_indent:
+                            logger.debug(f"Found variable used in payload: {var_name}")
+                            # Extract the full multiline string
+                            var_lines = [line]
+                            quote_type = '"""' if '"""' in stripped else "'''"
+                            quote_count = stripped.count(quote_type)
+                            
+                            # If quotes are not closed on this line, find closing
+                            if quote_count % 2 == 1:
+                                i += 1
+                                while i < payload_start_idx:
+                                    var_lines.append(lines[i])
+                                    if quote_type in lines[i]:
+                                        break
+                                    i += 1
+                            variable_definitions.extend(var_lines)
+                            logger.debug(f"Extracted {len(var_lines)} lines for variable {var_name}")
+            i += 1
+        
+        # Strip leading indentation from payload lines (they're indented in the function)
+        # Find the minimum indentation level
+        if payload_lines:
+            min_indent = min(len(line) - len(line.lstrip()) for line in payload_lines if line.strip())
+            payload_lines_stripped = [line[min_indent:] if len(line) > min_indent else line for line in payload_lines]
+            payload_code = '\n'.join(payload_lines_stripped)
+        
+        # Strip indentation from variable definitions
+        # For multiline strings, Python preserves content exactly, so we can strip all indentation
+        if variable_definitions:
+            logger.debug(f"Processing {len(variable_definitions)} variable definition lines")
+            # Find minimum indentation to strip
+            var_min_indent = min(len(line) - len(line.lstrip()) for line in variable_definitions if line.strip())
+            logger.debug(f"Variable min indent: {var_min_indent}")
+            
+            # Strip the minimum indentation from all lines
+            variable_definitions_stripped = []
+            for line in variable_definitions:
+                if line.strip():
+                    # Strip the minimum indent amount
+                    if len(line) > var_min_indent:
+                        variable_definitions_stripped.append(line[var_min_indent:])
+                    else:
+                        variable_definitions_stripped.append(line.lstrip())
+                else:
+                    variable_definitions_stripped.append('')
+            
+            # Combine variable definitions and payload
+            full_code = '\n'.join(variable_definitions_stripped + payload_lines_stripped)
+            logger.debug(f"Full code length: {len(full_code)} characters")
+            logger.debug(f"First 500 chars:\n{full_code[:500]}")
+            logger.debug(f"Last 200 chars:\n{full_code[-200:]}")
+        else:
+            full_code = payload_code
+            logger.debug("No variable definitions found")
+            logger.debug(f"Payload code (first 300 chars):\n{payload_code[:300]}")
         
         # Try to evaluate it safely
-        try:
-            # Create a minimal context
-            context = {
-                'BASE_URL': BASE_URL,
-                'get_api_key': get_api_key,
-            }
-            local_vars = {}
-            exec(f"payload = {payload_code}", context, local_vars)
-            return local_vars.get('payload')
-        except Exception as e:
-            # Fallback: try to parse as JSON-like structure
+        context = {
+            'BASE_URL': BASE_URL,
+            'get_api_key': get_api_key,
+        }
+        
+        # Try multiple approaches
+        attempts = [
+            (full_code, "full code with variables"),
+            (payload_code, "payload code only"),
+        ]
+        
+        for code_to_exec, description in attempts:
             try:
-                # Replace Python None with null, True/False with true/false
-                json_str = payload_code.replace('None', 'null').replace('True', 'true').replace('False', 'false')
-                # Remove trailing comma issues
-                json_str = json_str.replace(',\n}', '\n}').replace(',\n]', '\n]')
-                return json.loads(json_str)
-            except:
-                return None
+                logger.debug(f"Trying to exec: {description}")
+                logger.debug(f"Code preview (first 300 chars):\n{code_to_exec[:300]}")
+                local_vars = {}
+                # Execute the code
+                exec(code_to_exec, context, local_vars)
+                logger.debug(f"Variables after exec: {list(local_vars.keys())}")
+                result = local_vars.get('payload')
+                logger.debug(f"Exec completed. Result: {result is not None}, type: {type(result)}")
+                if result is not None:
+                    logger.debug(f"Result keys: {list(result.keys()) if isinstance(result, dict) else 'N/A'}")
+                if result is not None and isinstance(result, dict):
+                    logger.debug(f"SUCCESS: Extracted payload with {len(result)} keys")
+                    return result
+                # Fallback: if x12_content exists but payload doesn't, create it manually
+                if 'x12_content' in local_vars and result is None:
+                    logger.debug("x12_content exists but payload doesn't, creating manually")
+                    try:
+                        manual_payload = {"x12": local_vars['x12_content']}
+                        logger.debug(f"Created manual payload with {len(manual_payload)} keys")
+                        return manual_payload
+                    except Exception as e:
+                        logger.debug(f"Failed to create manual payload: {e}")
+            except SyntaxError as e:
+                logger.debug(f"SyntaxError with {description}: {e}")
+                logger.debug(f"Code that failed (first 300 chars):\n{code_to_exec[:300]}")
+                # Try fixing indentation - remove ALL leading whitespace from each line
+                try:
+                    fixed_lines = []
+                    for line in code_to_exec.split('\n'):
+                        if line.strip():
+                            # Remove all leading whitespace
+                            fixed_lines.append(line.lstrip())
+                        else:
+                            fixed_lines.append('')
+                    fixed_code = '\n'.join(fixed_lines)
+                    logger.debug(f"Trying fixed code (first 500 chars):\n{fixed_code[:500]}")
+                    logger.debug(f"Fixed code (last 200 chars):\n{fixed_code[-200:]}")
+                    local_vars = {}
+                    exec(fixed_code, context, local_vars)
+                    logger.debug(f"Variables after exec: {list(local_vars.keys())}")
+                    result = local_vars.get('payload')
+                    logger.debug(f"Fixed code exec completed. Result: {result is not None}, type: {type(result)}")
+                    if result is not None:
+                        logger.debug(f"Fixed result keys: {list(result.keys()) if isinstance(result, dict) else 'N/A'}")
+                    if result is not None and isinstance(result, dict):
+                        logger.debug(f"SUCCESS: Fixed code worked, payload has {len(result)} keys")
+                        return result
+                    else:
+                        # Check what variables were created and their values
+                        logger.debug(f"Variables created: {list(local_vars.keys())}")
+                        if 'x12_content' in local_vars:
+                            logger.debug(f"x12_content exists, length: {len(local_vars['x12_content']) if isinstance(local_vars['x12_content'], str) else 'N/A'}")
+                        # Try to manually create payload if x12_content exists
+                        if 'x12_content' in local_vars and 'payload' not in local_vars:
+                            logger.debug("x12_content exists but payload doesn't, trying to create it manually")
+                            try:
+                                manual_payload = {"x12": local_vars['x12_content']}
+                                logger.debug(f"Created manual payload with {len(manual_payload)} keys")
+                                return manual_payload
+                            except Exception as e:
+                                logger.debug(f"Failed to create manual payload: {e}")
+                except Exception as fix_error:
+                    logger.debug(f"Fixed code also failed: {type(fix_error).__name__}: {fix_error}")
+                    import traceback
+                    logger.debug(f"Traceback: {traceback.format_exc()}")
+                    pass
+            except Exception as e:
+                # Continue to next attempt
+                logger.debug(f"Exception with {description}: {type(e).__name__}: {e}")
+                import traceback
+                logger.debug(f"Traceback: {traceback.format_exc()}")
+                pass
+        
+        # Fallback: try to parse as JSON-like structure (won't work for multiline strings)
+        try:
+            # Replace Python None with null, True/False with true/false
+            json_str = payload_code.replace('None', 'null').replace('True', 'true').replace('False', 'false')
+            # Remove trailing comma issues
+            json_str = json_str.replace(',\n}', '\n}').replace(',\n]', '\n]')
+            return json.loads(json_str)
+        except:
+            # Last resort: try to actually call the function and extract payload
+            # But this won't work if function requires API key, so we'll return None
+            return None
     except Exception as e:
+        # If all else fails, return None
         return None
 
 def execute_request_with_payload(req_id, payload, headers, url, method):
@@ -178,6 +372,26 @@ if run_mode == "Single Request":
         if func and req_info['method'] in ['POST', 'PUT', 'PATCH']:
             # Try to extract payload from function
             default_payload = extract_payload_from_function(func)
+            # Show extraction debug info
+            if default_payload is None:
+                with st.expander("⚠️ Payload Extraction Debug", expanded=False):
+                    st.warning("Payload extraction failed. Debug info:")
+                    try:
+                        source = inspect.getsource(func)
+                        has_payload = 'payload = {' in source or 'payload={' in source
+                        st.write(f"- Function: {func.__name__}")
+                        st.write(f"- Has 'payload = {{': {has_payload}")
+                        st.write(f"- Source length: {len(source)} characters")
+                        if has_payload:
+                            # Show where payload is
+                            lines = source.split('\n')
+                            for i, line in enumerate(lines):
+                                if 'payload = {' in line or 'payload={' in line:
+                                    st.write(f"- Payload found at line {i+1}")
+                                    st.code(line[:100] + "..." if len(line) > 100 else line)
+                                    break
+                    except Exception as e:
+                        st.write(f"- Error getting source: {e}")
         
         # Initialize edited payload in session state if not exists
         payload_key = f"payload_{selected_id}"
@@ -188,10 +402,11 @@ if run_mode == "Single Request":
             st.session_state[refresh_key] = False
         
         if payload_key not in st.session_state.edited_payloads:
-            st.session_state.edited_payloads[payload_key] = default_payload
+            # Use default_payload if available, otherwise use empty dict
+            st.session_state.edited_payloads[payload_key] = default_payload if default_payload is not None else {}
         
-        # Display editable payload
-        if default_payload is not None:
+        # Display editable payload (always show for POST/PUT/PATCH requests)
+        if req_info['method'] in ['POST', 'PUT', 'PATCH']:
             st.markdown("---")
             # Put refresh button on same line as header
             col1, col2 = st.columns([3, 1])
@@ -199,12 +414,28 @@ if run_mode == "Single Request":
                 st.subheader("📝 Request Payload (Editable)")
             with col2:
                 if st.button("🔄 Refresh from Code", key=f"refresh_btn_{selected_id}", help="Reload payload from function source code", use_container_width=True):
-                    st.session_state.edited_payloads[payload_key] = default_payload
+                    # Try to extract payload again
+                    refreshed_payload = extract_payload_from_function(func)
+                    if refreshed_payload is not None:
+                        st.session_state.edited_payloads[payload_key] = refreshed_payload
+                    elif default_payload is not None:
+                        st.session_state.edited_payloads[payload_key] = default_payload
+                    else:
+                        st.session_state.edited_payloads[payload_key] = {}
                     st.session_state[refresh_key] = True
                     st.rerun()
             
             # Use text area for editing (more reliable than json_editor)
-            payload_json = json.dumps(st.session_state.edited_payloads[payload_key], indent=2)
+            current_payload = st.session_state.edited_payloads[payload_key]
+            if current_payload is not None and len(current_payload) > 0:
+                payload_json = json.dumps(current_payload, indent=2)
+            else:
+                # Show a helpful message if payload is empty
+                if default_payload is None:
+                    payload_json = "{}"
+                else:
+                    payload_json = json.dumps(default_payload, indent=2) if default_payload else "{}"
+            
             edited_json = st.text_area(
                 "Edit Payload (JSON):",
                 value=payload_json,
@@ -213,14 +444,29 @@ if run_mode == "Single Request":
                 help="Modify the JSON payload below. Changes will be used when you click 'Run Request'."
             )
             try:
-                parsed_payload = json.loads(edited_json)
-                st.session_state.edited_payloads[payload_key] = parsed_payload
-                st.success("✓ Valid JSON")
+                # Strip whitespace and check if empty
+                edited_json_stripped = edited_json.strip()
+                
+                if not edited_json_stripped or edited_json_stripped == "{}":
+                    if default_payload is not None:
+                        st.warning("⚠️ Payload is empty. Using default payload.")
+                        parsed_payload = default_payload
+                    else:
+                        st.warning("⚠️ Payload is empty. Please enter a valid JSON payload.")
+                        parsed_payload = {}
+                else:
+                    parsed_payload = json.loads(edited_json_stripped)
+                    if not isinstance(parsed_payload, dict):
+                        st.error("Payload must be a JSON object (dict), not an array or primitive value.")
+                        parsed_payload = current_payload if current_payload is not None and len(current_payload) > 0 else (default_payload if default_payload is not None else {})
+                    else:
+                        st.session_state.edited_payloads[payload_key] = parsed_payload
+                        st.success("✓ Valid JSON")
             except json.JSONDecodeError as e:
                 st.error(f"Invalid JSON format: {str(e)}")
                 # Keep the previous valid payload
-                if st.session_state.edited_payloads[payload_key] is None:
-                    st.session_state.edited_payloads[payload_key] = default_payload
+                if current_payload is None or len(current_payload) == 0:
+                    st.session_state.edited_payloads[payload_key] = default_payload if default_payload is not None else {}
     
     # Run button
     col1, col2, col3 = st.columns([1, 1, 4])
@@ -296,18 +542,66 @@ if run_mode == "Single Request":
                     # Get edited payload or use default
                     payload_key = f"payload_{selected_id}"
                     payload = st.session_state.edited_payloads.get(payload_key)
+                    logger.debug(f"Initial payload from session: {payload is not None}, type: {type(payload) if payload is not None else None}")
                     
                     # If no edited payload, try to extract from function
-                    if payload is None:
+                    if payload is None or (isinstance(payload, dict) and len(payload) == 0):
+                        logger.debug("Payload is None or empty, attempting extraction")
                         payload = extract_payload_from_function(func)
+                        logger.debug(f"After extraction: {payload is not None}, type: {type(payload) if payload is not None else None}")
+                        # If extraction failed, try to get default from the payload editor
+                        if payload is None or (isinstance(payload, dict) and len(payload) == 0):
+                            logger.debug(f"Extraction failed, trying default_payload: {default_payload is not None}")
+                            # Check if there's a default payload that was extracted earlier
+                            if default_payload is not None:
+                                payload = default_payload
+                                st.session_state.edited_payloads[payload_key] = payload
+                                logger.debug(f"Using default_payload: {len(payload)} keys")
+                    
+                    # Validate payload for POST/PUT/PATCH requests
+                    if req_info['method'] in ['POST', 'PUT', 'PATCH']:
+                        logger.debug(f"Validating payload for {req_info['method']} request")
+                        logger.debug(f"Payload: {payload}, type: {type(payload)}, is_empty: {isinstance(payload, dict) and len(payload) == 0 if isinstance(payload, dict) else 'N/A'}")
+                        if payload is None or (isinstance(payload, dict) and len(payload) == 0):
+                            st.error("⚠️ Error: No payload found or payload is empty.")
+                            st.info("💡 **Solution:** Click the '🔄 Refresh from Code' button above to reload the payload from the function, or manually enter/edit the JSON payload in the text area below.")
+                            # Log debug info
+                            with st.expander("🔍 Debug Information"):
+                                st.code(f"Payload: {payload}\nType: {type(payload)}\nDefault payload available: {default_payload is not None}\nFunction: {func.__name__ if func else 'None'}")
+                            st.stop()
+                        # Ensure payload is a valid dict/object (not empty string or None)
+                        if not isinstance(payload, dict):
+                            st.error(f"Error: Invalid payload type. Expected dict, got {type(payload)}")
+                            st.info("💡 **Solution:** Make sure the payload in the text area is a valid JSON object.")
+                            st.stop()
                     
                     start_time = time.time()
+                    
+                    # Log the request details
+                    logger.debug(f"Making {req_info['method']} request to {url}")
+                    logger.debug(f"Payload keys: {list(payload.keys()) if isinstance(payload, dict) else 'N/A'}")
+                    logger.debug(f"Payload preview: {json.dumps(payload, indent=2)[:500]}...")
+                    
+                    # Show debug info in UI (collapsible)
+                    with st.expander("🔍 Request Debug Info", expanded=False):
+                        st.write("**URL:**", url)
+                        st.write("**Method:**", req_info['method'])
+                        st.write("**Payload Type:**", type(payload).__name__)
+                        st.write("**Payload Keys:**", list(payload.keys()) if isinstance(payload, dict) else "N/A")
+                        st.write("**Payload Size:**", len(json.dumps(payload)) if payload else 0, "bytes")
+                        st.json(payload)
                     
                     # Execute request with payload
                     if req_info['method'] == 'GET':
                         response = requests.get(url, headers=headers)
                     elif req_info['method'] == 'POST':
-                        response = requests.post(url, headers=headers, json=payload)
+                        # Only send json if payload exists and is not empty
+                        if payload:
+                            logger.debug("Sending POST request with JSON payload")
+                            response = requests.post(url, headers=headers, json=payload)
+                        else:
+                            logger.debug("Sending POST request without payload")
+                            response = requests.post(url, headers=headers)
                     elif req_info['method'] == 'PUT':
                         response = requests.put(url, headers=headers, json=payload)
                     elif req_info['method'] == 'PATCH':

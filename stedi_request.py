@@ -243,166 +243,9 @@ def request_6():
         "Content-Type": "application/json"
     }
     payload = {
-        "heading": {
-            "transaction_set_header_ST": {
-                "transaction_set_identifier_code_01": "837",
-                "transaction_set_control_number_02": "0001"
-            },
-            "submitter_name_NM1_loop": {
-                "submitter_name_NM1": {
-                    "entity_identifier_code_01": "41",
-                    "entity_type_qualifier_02": "2",
-                    "submitter_last_or_organization_name_03": "EXAMPLE SUBMITTER",
-                    "identification_code_qualifier_08": "46",
-                    "submitter_identification_code_09": "123456789"
-                },
-                "submitter_edi_contact_information_PER": [
-                    {
-                        "contact_function_code_01": "IC",
-                        "submitter_contact_name_02": "Contact Name",
-                        "communication_number_qualifier_03": "TE",
-                        "communication_number_04": "5551234567"
-                    }
-                ]
-            },
-            "receiver_name_NM1": {
-                "entity_identifier_code_01": "40",
-                "entity_type_qualifier_02": "2",
-                "receiver_name_03": "EXAMPLE RECEIVER"
-            }
-        },
-        "detail": {
-            "billing_provider_hierarchical_level_HL_loop": [
-                {
-                    "hierarchical_level_HL": {
-                        "hierarchical_id_number_01": "1",
-                        "hierarchical_level_code_03": "20",
-                        "hierarchical_child_code_04": "1"
-                    },
-                    "billing_provider_name_NM1_loop": {
-                        "billing_provider_name_NM1": {
-                            "entity_identifier_code_01": "85",
-                            "entity_type_qualifier_02": "2",
-                            "billing_provider_last_or_organizational_name_03": "EXAMPLE BILLING PROVIDER",
-                            "identification_code_qualifier_08": "XX",
-                            "billing_provider_identifier_09": "1932808896"
-                        },
-                        "billing_provider_address_N3": {
-                            "billing_provider_address_line_01": "123 Main St"
-                        },
-                        "billing_provider_city_state_zip_code_N4": {
-                            "billing_provider_city_name_01": "Anytown",
-                            "billing_provider_state_code_02": "MA",
-                            "billing_provider_postal_zone_or_zip_code_03": "02115"
-                        },
-                        "billing_provider_tax_identification_REF": {
-                            "reference_identification_qualifier_01": "EI",
-                            "billing_provider_tax_identification_number_02": "123456789"
-                        }
-                    },
-                    "subscriber_hierarchical_level_HL_loop": [
-                        {
-                            "hierarchical_level_HL": {
-                                "hierarchical_id_number_01": "2",
-                                "hierarchical_parent_id_number_02": "1",
-                                "hierarchical_level_code_03": "22",
-                                "hierarchical_child_code_04": "0"
-                            },
-                            "subscriber_information_SBR": {
-                                "payer_responsibility_sequence_number_code_01": "P",
-                                "individual_relationship_code_02": "18",
-                                "claim_filing_indicator_code_09": "11"
-                            },
-                            "subscriber_name_NM1": {
-                                "entity_identifier_code_01": "IL",
-                                "entity_type_qualifier_02": "1",
-                                "subscriber_last_name_03": "EXAMPLE",
-                                "subscriber_first_name_04": "EXAMPLE"
-                            },
-                            "payer_name_NM1_loop": {
-                                "payer_name_NM1": {
-                                    "entity_identifier_code_01": "PR",
-                                    "entity_type_qualifier_02": "2",
-                                    "payer_name_03": "Tufts Health Plan",
-                                    "identification_code_qualifier_08": "PI",
-                                    "payer_identifier_09": "10379"
-                                }
-                            },
-                            "claim_information_CLM_loop": [
-                                {
-                                    "claim_information_CLM": {
-                                        "patient_control_number_01": "123456",
-                                        "total_claim_charge_amount_02": "100.00",
-                                        "claim_frequency_code_05_1": "1",
-                                        "provider_or_supplier_signature_indicator_06": "A",
-                                        "assignment_or_plan_participation_code_07": "A",
-                                        "benefits_assignment_certification_indicator_08": "Y",
-                                        "release_of_information_code_09": "I"
-                                    },
-                                    "institutional_claim_code_CL1": {
-                                        "admission_type_code_01": "1",
-                                        "admission_source_code_02": "1",
-                                        "patient_status_code_03": "01"
-                                    },
-                                    "date_statement_dates_DTP": [
-                                        {
-                                            "date_time_qualifier_01": "434",
-                                            "date_time_period_format_qualifier_02": "RD8",
-                                            "statement_from_or_to_date_03": "20240101-20240101"
-                                        }
-                                    ],
-                                    "health_care_diagnosis_code_HI": [
-                                        {
-                                            "health_care_code_information_01": {
-                                                "diagnosis_type_code_01_1": "ABK",
-                                                "diagnosis_code_01_2": "Z0000"
-                                            }
-                                        }
-                                    ],
-                                    "service_line_SV2_loop": [
-                                        {
-                                            "service_line_SV2": {
-                                                "service_line_revenue_code_01": "0450",
-                                                "composite_medical_procedure_identifier_02": {
-                                                    "product_or_service_id_qualifier_02_1": "HC"
-                                                },
-                                                "line_item_charge_amount_03": "100.00",
-                                                "unit_or_basis_for_measurement_code_04": "UN",
-                                                "service_unit_count_05": "1"
-                                            },
-                                            "service_date_DTP": {
-                                                "date_time_qualifier_01": "472",
-                                                "date_time_period_format_qualifier_02": "D8",
-                                                "service_date_03": "20240101"
-                                            }
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ]
-        },
-        "attending": {
-            "lastName": "EXAMPLE",
-            "npi": "1083640692"
-        },
-        "billing": {
-            "npi": "1932808896",
-            "organizationName": "EXAMPLE BILLING PROVIDER",
-            "address": {
-                "address1": "123 Main St",
-                "city": "Anytown",
-                "state": "MA",
-                "postalCode": "02115-1234"
-            },
-            "employerId": "123456789",
-            "contactInformation": {
-                "name": "Contact Name",
-                "phoneNumber": "5551234567"
-            }
-        },
+        "usageIndicator": "T",
+        "tradingPartnerName": "Tufts Health Plan",
+        "tradingPartnerServiceId": "10379",
         "submitter": {
             "organizationName": "EXAMPLE SUBMITTER",
             "contactInformation": {
@@ -412,48 +255,84 @@ def request_6():
             "taxId": "123456789"
         },
         "receiver": {
-            "organizationName": "EXAMPLE RECEIVER"
+            "organizationName": "Tufts Health Plan"
         },
         "subscriber": {
+            "memberId": "123456789",
+            "paymentResponsibilityLevelCode": "P",
             "firstName": "EXAMPLE",
             "lastName": "EXAMPLE",
-            "paymentResponsibilityLevelCode": "P"
+            "groupNumber": "67890",
+            "dateOfBirth": "19800101",
+            "gender": "M"
         },
         "claimInformation": {
+            "claimFilingCode": "11",
             "patientControlNumber": "123456",
             "claimChargeAmount": "100.00",
-            "claimFilingCode": "11",
-            "claimFrequencyCode": "1",
             "placeOfServiceCode": "21",
+            "claimFrequencyCode": "1",
             "planParticipationCode": "A",
             "benefitsAssignmentCertificationIndicator": "Y",
-            "releaseInformationCode": "I",
-            "claimDateInformation": {
-                "admissionDate": "20240101",
-                "statementBeginDate": "20240101",
-                "statementEndDate": "20240101"
-            },
-            "admittingDiagnosisCode": "Z0000",
+            "releaseInformationCode": "Y",
             "principalDiagnosis": {
                 "qualifierCode": "ABK",
                 "principalDiagnosisCode": "Z0000"
             },
             "serviceLines": [
                 {
+                    "assignedNumber": "1",
+                    "serviceDate": "20240101",
+                    "serviceDateEnd": "20240101",
+                    "lineItemControlNumber": "LINE001",
                     "institutionalService": {
+                        "serviceLineRevenueCode": "0450",
                         "lineItemChargeAmount": "100.00",
                         "measurementUnit": "UN",
-                        "serviceLineRevenueCode": "0450",
-                        "serviceUnitCount": "1"
+                        "serviceUnitCount": "1",
+                        "procedureIdentifier": "HC",
+                        "procedureCode": "99213"
                     }
                 }
-            ]
+            ],
+            "claimCodeInformation": {
+                "admissionTypeCode": "1",
+                "admissionSourceCode": "1",
+                "patientStatusCode": "01"
+            },
+            "claimDateInformation": {
+                "admissionDateAndHour": "202401010800",
+                "statementBeginDate": "20240101",
+                "statementEndDate": "20240101"
+            }
         },
-        "claimCodeInformation": {
-            "admissionTypeCode": "1",
-            "patientStatusCode": "01"
-        },
-        "tradingPartnerServiceId": "10379"
+        "providers": [
+            {
+                "providerType": "BillingProvider",
+                "npi": "1932808896",
+                "employerId": "123456789",
+                "organizationName": "EXAMPLE BILLING PROVIDER",
+                "address": {
+                    "address1": "123 Main St",
+                    "city": "Anytown",
+                    "state": "MA",
+                    "postalCode": "021151234"
+                },
+                "contactInformation": {
+                    "name": "Contact Name",
+                    "phoneNumber": "5551234567"
+                }
+            },
+            {
+                "providerType": "AttendingProvider",
+                "npi": "1083640692",
+                "firstName": "EXAMPLE",
+                "lastName": "PROVIDER",
+                "contactInformation": {
+                    "name": "EXAMPLE PROVIDER"
+                }
+            }
+        ]
     }
     response = requests.post(url, headers=headers, json=payload)
     return response

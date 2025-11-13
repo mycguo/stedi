@@ -89,6 +89,27 @@ response = request_1()
 print(response.json())
 ```
 
+## Streamlit Web UI
+
+A Streamlit web application is available for running requests interactively:
+
+```bash
+streamlit run streamlit_app.py
+```
+
+This will open a web browser with an interactive UI where you can:
+- **Run individual requests**: Select a request from a dropdown and execute it
+- **Run all requests**: Execute all 21 requests sequentially with progress tracking
+- **View results**: See status codes, response times, and full response bodies
+- **Configure API key**: Update your API key directly in the UI (password-protected)
+
+Features:
+- 📊 Real-time progress tracking for batch runs
+- 📋 Detailed request information and descriptions
+- 🎨 Clean, user-friendly interface
+- 💾 Session state management (results persist during session)
+- ⚡ Fast response display with JSON formatting
+
 ## Customization
 
 You can modify `generate_sample_requests.py` to:

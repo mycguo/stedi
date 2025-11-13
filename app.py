@@ -1,0 +1,319 @@
+#!/usr/bin/env python3
+"""
+Streamlit app for running Stedi Healthcare API requests
+"""
+
+import streamlit as st
+import requests
+import json
+import time
+from sample_requests import REQUESTS, API_KEY, BASE_URL
+import sample_requests
+
+# Initialize request functions
+for req_id in REQUESTS:
+    func_name = f"request_{req_id}"
+    REQUESTS[req_id]["func"] = getattr(sample_requests, func_name, None)
+
+# Page configuration
+st.set_page_config(
+    page_title="Stedi Healthcare API Request Runner",
+    page_icon="🏥",
+    layout="wide"
+)
+
+# Initialize session state
+if 'request_results' not in st.session_state:
+    st.session_state.request_results = {}
+
+# Title
+st.title("🏥 Stedi Healthcare API Request Runner")
+st.markdown("---")
+
+# Sidebar for configuration
+with st.sidebar:
+    st.header("⚙️ Configuration")
+    
+    # API Key input
+    api_key = st.text_input(
+        "API Key",
+        value=API_KEY,
+        type="password",
+        help="Enter your Stedi Healthcare API key"
+    )
+    
+    # Update API key in module
+    if api_key != API_KEY:
+        sample_requests.API_KEY = api_key
+    
+    st.markdown("---")
+    
+    # Base URL
+    st.text_input("Base URL", value=BASE_URL, disabled=True)
+    
+    st.markdown("---")
+    
+    # Request selection mode
+    st.header("📋 Request Selection")
+    run_mode = st.radio(
+        "Run Mode",
+        ["Single Request", "All Requests"],
+        help="Choose to run a single request or all requests at once"
+    )
+
+# Main content area
+if run_mode == "Single Request":
+    st.header("Select a Request")
+    
+    # Create a selectbox with request details
+    request_options = {
+        f"{req_id}. {req_info['method']} {req_info['path']}": req_id
+        for req_id, req_info in REQUESTS.items()
+    }
+    
+    selected_request = st.selectbox(
+        "Choose a request to run:",
+        options=list(request_options.keys()),
+        help="Select a request from the list"
+    )
+    
+    selected_id = request_options[selected_request]
+    req_info = REQUESTS[selected_id]
+    
+    # Show request details
+    with st.expander("📄 Request Details", expanded=True):
+        col1, col2 = st.columns(2)
+        with col1:
+            st.write(f"**Method:** {req_info['method']}")
+            st.write(f"**Path:** {req_info['path']}")
+        with col2:
+            st.write(f"**ID:** {selected_id}")
+            st.write(f"**Full URL:** {BASE_URL}{req_info['path']}")
+        
+        if req_info.get('description'):
+            st.write(f"**Description:** {req_info['description']}")
+    
+    # Run button
+    col1, col2, col3 = st.columns([1, 1, 4])
+    with col1:
+        run_button = st.button("🚀 Run Request", type="primary", use_container_width=True)
+    with col2:
+        clear_button = st.button("🗑️ Clear Results", use_container_width=True)
+    
+    if clear_button:
+        if selected_id in st.session_state.request_results:
+            del st.session_state.request_results[selected_id]
+        st.rerun()
+    
+    if run_button:
+        with st.spinner(f"Running request {selected_id}..."):
+            try:
+                func = req_info['func']
+                if not func:
+                    st.error(f"Request function {selected_id} not found!")
+                else:
+                    start_time = time.time()
+                    response = func()
+                    elapsed_time = time.time() - start_time
+                    
+                    # Store result
+                    result = {
+                        "status_code": response.status_code,
+                        "headers": dict(response.headers),
+                        "elapsed_time": elapsed_time,
+                        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+                    }
+                    
+                    try:
+                        result["body"] = response.json()
+                        result["body_type"] = "json"
+                    except:
+                        result["body"] = response.text
+                        result["body_type"] = "text"
+                    
+                    st.session_state.request_results[selected_id] = result
+                    st.success(f"Request completed in {elapsed_time:.2f}s")
+                    st.rerun()
+            except Exception as e:
+                st.error(f"Error running request: {str(e)}")
+                import traceback
+                st.code(traceback.format_exc())
+    
+    # Display results
+    if selected_id in st.session_state.request_results:
+        result = st.session_state.request_results[selected_id]
+        st.markdown("---")
+        st.header("📊 Response")
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            status_color = "🟢" if 200 <= result["status_code"] < 300 else "🔴" if result["status_code"] >= 400 else "🟡"
+            st.metric("Status Code", f"{status_color} {result['status_code']}")
+        with col2:
+            st.metric("Response Time", f"{result['elapsed_time']:.2f}s")
+        with col3:
+            st.metric("Timestamp", result["timestamp"])
+        
+        # Response body
+        st.subheader("Response Body")
+        if result["body_type"] == "json":
+            st.json(result["body"])
+        else:
+            st.code(result["body"], language="text")
+        
+        # Headers (collapsible)
+        with st.expander("📋 Response Headers"):
+            st.json(result["headers"])
+
+else:  # All Requests mode
+    st.header("Run All Requests")
+    st.warning("⚠️ This will execute all 21 requests sequentially. This may take a while.")
+    
+    col1, col2, col3 = st.columns([1, 1, 4])
+    with col1:
+        run_all_button = st.button("🚀 Run All Requests", type="primary", use_container_width=True)
+    with col2:
+        clear_all_button = st.button("🗑️ Clear All Results", use_container_width=True)
+    
+    if clear_all_button:
+        st.session_state.request_results = {}
+        st.rerun()
+    
+    if run_all_button:
+        progress_bar = st.progress(0)
+        status_text = st.empty()
+        results_container = st.container()
+        
+        total_requests = len(REQUESTS)
+        completed = 0
+        results_summary = []
+        
+        for req_id, req_info in REQUESTS.items():
+            status_text.text(f"Running request {req_id}/{total_requests}: {req_info['method']} {req_info['path']}")
+            
+            try:
+                func = req_info['func']
+                if not func:
+                    result = {
+                        "id": req_id,
+                        "status": "error",
+                        "message": "Function not found",
+                        "status_code": None,
+                        "elapsed_time": 0
+                    }
+                else:
+                    start_time = time.time()
+                    response = func()
+                    elapsed_time = time.time() - start_time
+                    
+                    try:
+                        body = response.json()
+                        body_type = "json"
+                    except:
+                        body = response.text[:500]  # Truncate long text
+                        body_type = "text"
+                    
+                    result = {
+                        "id": req_id,
+                        "status": "success" if 200 <= response.status_code < 300 else "error",
+                        "status_code": response.status_code,
+                        "elapsed_time": elapsed_time,
+                        "body_preview": body if body_type == "json" else body[:200],
+                        "body_type": body_type
+                    }
+                    
+                    # Store full result
+                    st.session_state.request_results[req_id] = {
+                        "status_code": response.status_code,
+                        "headers": dict(response.headers),
+                        "elapsed_time": elapsed_time,
+                        "body": body if body_type == "json" else response.text,
+                        "body_type": body_type,
+                        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+                    }
+                
+                results_summary.append(result)
+            except Exception as e:
+                results_summary.append({
+                    "id": req_id,
+                    "status": "error",
+                    "message": str(e),
+                    "status_code": None,
+                    "elapsed_time": 0
+                })
+            
+            completed += 1
+            progress_bar.progress(completed / total_requests)
+        
+        status_text.text("✅ All requests completed!")
+        progress_bar.empty()
+        status_text.empty()
+        
+        # Display summary
+        st.markdown("---")
+        st.header("📊 Results Summary")
+        
+        # Summary statistics
+        success_count = sum(1 for r in results_summary if r.get("status") == "success")
+        error_count = sum(1 for r in results_summary if r.get("status") == "error")
+        total_time = sum(r.get("elapsed_time", 0) for r in results_summary)
+        
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric("Total Requests", total_requests)
+        with col2:
+            st.metric("✅ Successful", success_count, delta=f"{success_count/total_requests*100:.1f}%")
+        with col3:
+            st.metric("❌ Errors", error_count)
+        with col4:
+            st.metric("⏱️ Total Time", f"{total_time:.2f}s")
+        
+        # Results table
+        st.subheader("Detailed Results")
+        
+        for result in results_summary:
+            req_info = REQUESTS[result["id"]]
+            with st.expander(
+                f"{result['id']}. {req_info['method']} {req_info['path']} - "
+                f"Status: {result.get('status_code', 'N/A')} "
+                f"({result.get('elapsed_time', 0):.2f}s)",
+                expanded=False
+            ):
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.write(f"**Status:** {result.get('status', 'unknown')}")
+                    st.write(f"**Status Code:** {result.get('status_code', 'N/A')}")
+                with col2:
+                    st.write(f"**Elapsed Time:** {result.get('elapsed_time', 0):.2f}s")
+                    if result["id"] in st.session_state.request_results:
+                        st.write(f"**Timestamp:** {st.session_state.request_results[result['id']].get('timestamp', 'N/A')}")
+                
+                if result.get("body_preview"):
+                    st.write("**Response Preview:**")
+                    if result.get("body_type") == "json":
+                        st.json(result["body_preview"])
+                    else:
+                        st.code(result["body_preview"], language="text")
+                
+                if result.get("message"):
+                    st.error(f"Error: {result['message']}")
+                
+                # Link to full result
+                if result["id"] in st.session_state.request_results:
+                    st.write("**Full Response:**")
+                    full_result = st.session_state.request_results[result["id"]]
+                    if full_result.get("body_type") == "json":
+                        st.json(full_result["body"])
+                    else:
+                        st.code(full_result["body"], language="text")
+
+# Footer
+st.markdown("---")
+st.markdown(
+    "<div style='text-align: center; color: gray;'>"
+    "Stedi Healthcare API Request Runner | "
+    f"Base URL: {BASE_URL}"
+    "</div>",
+    unsafe_allow_html=True
+)
+

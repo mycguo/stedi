@@ -372,8 +372,12 @@ if run_mode == "Single Request":
         if func and req_info['method'] in ['POST', 'PUT', 'PATCH']:
             # Try to extract payload from function
             default_payload = extract_payload_from_function(func)
-            # Show extraction debug info
-            if default_payload is None:
+            # Show extraction status
+            if default_payload is not None and len(default_payload) > 0:
+                # Show success in a collapsible expander (not too intrusive)
+                with st.expander("✅ Payload Extraction Status", expanded=False):
+                    st.success(f"Successfully extracted payload with {len(default_payload)} key(s): {', '.join(default_payload.keys())}")
+            elif default_payload is None:
                 with st.expander("⚠️ Payload Extraction Debug", expanded=False):
                     st.warning("Payload extraction failed. Debug info:")
                     try:
@@ -401,9 +405,15 @@ if run_mode == "Single Request":
         if refresh_key not in st.session_state:
             st.session_state[refresh_key] = False
         
+        # Initialize or update edited payload
         if payload_key not in st.session_state.edited_payloads:
             # Use default_payload if available, otherwise use empty dict
             st.session_state.edited_payloads[payload_key] = default_payload if default_payload is not None else {}
+        elif default_payload is not None and len(default_payload) > 0:
+            # If we successfully extracted a payload and session state is empty, update it
+            current = st.session_state.edited_payloads[payload_key]
+            if current is None or len(current) == 0:
+                st.session_state.edited_payloads[payload_key] = default_payload
         
         # Display editable payload (always show for POST/PUT/PATCH requests)
         if req_info['method'] in ['POST', 'PUT', 'PATCH']:
@@ -427,14 +437,23 @@ if run_mode == "Single Request":
             
             # Use text area for editing (more reliable than json_editor)
             current_payload = st.session_state.edited_payloads[payload_key]
+            
+            # Determine which payload to display - prefer non-empty payload
+            display_payload = None
             if current_payload is not None and len(current_payload) > 0:
-                payload_json = json.dumps(current_payload, indent=2)
+                display_payload = current_payload
+            elif default_payload is not None and len(default_payload) > 0:
+                # Use default_payload if current is empty
+                display_payload = default_payload
+                # Also update session state so it persists
+                st.session_state.edited_payloads[payload_key] = default_payload
+            
+            if display_payload is not None:
+                payload_json = json.dumps(display_payload, indent=2)
             else:
-                # Show a helpful message if payload is empty
-                if default_payload is None:
-                    payload_json = "{}"
-                else:
-                    payload_json = json.dumps(default_payload, indent=2) if default_payload else "{}"
+                # Show empty payload with helpful message
+                payload_json = "{}"
+                st.info("💡 Tip: Click '🔄 Refresh from Code' to load the payload from the function.")
             
             edited_json = st.text_area(
                 "Edit Payload (JSON):",

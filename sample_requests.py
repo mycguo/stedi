@@ -100,8 +100,26 @@ def request_2():
         "Authorization": get_api_key(),
         "Content-Type": "application/json"
     }
+    # Basic X12 276 Health Care Claim Status Request
+    x12_content = """ISA*00*          *00*          *ZZ*STEDI          *01*123456789      *250101*1200*^*00501*000000001*0*P*:~
+GS*HB*STEDI*123456789*20250101*1200*1*X*005010X212~
+ST*276*0001*005010X212~
+BHT*0010*13*TEST123456*20250101*1200~
+HL*1**20*1~
+NM1*PR*2*60054*****PI*60054~
+HL*2*1*21*1~
+NM1*1P*1*EXAMPLE*EXAMPLE****XX*1234567890~
+HL*3*2*22*0~
+TRN*1*123456789*123456789~
+NM1*IL*1*EXAMPLE*EXAMPLE~
+DMG*D8*19800101~
+DTP*291*D8*20250101~
+SE*13*0001~
+GE*1*1~
+IEA*1*000000001~"""
+    
     payload = {
-        "x12": "example"
+        "x12": x12_content
 }
     response = requests.post(url, headers=headers, json=payload)
     return response
@@ -140,8 +158,26 @@ def request_4():
         "Authorization": get_api_key(),
         "Content-Type": "application/json"
     }
+    # Basic X12 270 Health Care Eligibility Benefit Inquiry
+    x12_content = """ISA*00*          *00*          *ZZ*STEDI          *01*123456789      *250101*1200*^*00501*000000001*0*P*:~
+GS*HS*STEDI*123456789*20250101*1200*1*X*005010X279A1~
+ST*270*0001*005010X279A1~
+BHT*0022*13*TEST123456*20250101*1200~
+HL*1**20*1~
+NM1*PR*2*10379*****PI*10379~
+HL*2*1*21*1~
+NM1*1P*1*UNITEDHEALTHCARE*****XX*87726~
+HL*3*2*22*0~
+TRN*1*123456789*1234567890~
+NM1*IL*1*DOE*JOHN~
+DMG*D8*19800101~
+DTP*291*D8*20250101~
+SE*12*0001~
+GE*1*1~
+IEA*1*000000001~"""
+    
     payload = {
-        "x12": "example"
+        "x12": x12_content
 }
     response = requests.post(url, headers=headers, json=payload)
     return response

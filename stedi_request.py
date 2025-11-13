@@ -325,7 +325,17 @@ def request_8():
         "Content-Type": "application/json"
     }
     payload = {
-        "billing": {},
+        "billing": {
+                "npi": "1932808896",
+                "employerId": "123456789",
+                "organizationName": "EXAMPLE BILLING PROVIDER",
+                "address": {
+                        "address1": "123 Main St",
+                        "city": "Anytown",
+                        "state": "MA",
+                        "postalCode": "02115"
+                }
+        },
         "claimInformation": {
                 "benefitsAssignmentCertificationIndicator": "N",
                 "claimChargeAmount": "100.00",
@@ -364,15 +374,25 @@ def request_8():
                 "organizationName": "EXAMPLE"
         },
         "submitter": {
-                "contactInformation": {}
+                "organizationName": "EXAMPLE SUBMITTER",
+                "submitterIdentification": "1932808896",
+                "contactInformation": {
+                        "name": "Contact Name",
+                        "phoneNumber": "5551234567"
+                }
         },
         "subscriber": {
                 "firstName": "JOHN",
                 "lastName": "DOE",
-                "memberId": "123456789"
+                "memberId": "123456789",
+                "dateOfBirth": "19800101",
+                "gender": "M"
         },
         "tradingPartnerServiceId": "10379"
 }
+    # Debug: Verify billing.npi exists before sending
+    if "billing" not in payload or "npi" not in payload.get("billing", {}):
+        raise ValueError("billing.npi is missing from payload!")
     response = requests.post(url, headers=headers, json=payload)
     return response
 

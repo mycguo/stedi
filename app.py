@@ -181,6 +181,12 @@ if run_mode == "Single Request":
         
         # Initialize edited payload in session state if not exists
         payload_key = f"payload_{selected_id}"
+        refresh_key = f"refresh_{selected_id}"
+        
+        # Check if refresh button was clicked
+        if refresh_key not in st.session_state:
+            st.session_state[refresh_key] = False
+        
         if payload_key not in st.session_state.edited_payloads:
             st.session_state.edited_payloads[payload_key] = default_payload
         
@@ -188,6 +194,14 @@ if run_mode == "Single Request":
         if default_payload is not None:
             st.markdown("---")
             st.subheader("📝 Request Payload (Editable)")
+            
+            # Add refresh button
+            col1, col2 = st.columns([1, 10])
+            with col1:
+                if st.button("🔄 Refresh from Code", key=f"refresh_btn_{selected_id}", help="Reload payload from function source code"):
+                    st.session_state.edited_payloads[payload_key] = default_payload
+                    st.session_state[refresh_key] = True
+                    st.rerun()
             
             # Use text area for editing (more reliable than json_editor)
             payload_json = json.dumps(st.session_state.edited_payloads[payload_key], indent=2)

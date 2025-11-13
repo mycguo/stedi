@@ -78,30 +78,42 @@ python3 sample_requests.py --run 19 --api-key "your-api-key-here"
 You can also import and use the functions directly:
 
 ```python
-from sample_requests import request_1, API_KEY
+from sample_requests import request_1
+import os
 
-# Set your API key
-import sample_requests
-sample_requests.API_KEY = "your-actual-api-key"
+# Set API key via environment variable
+os.environ["STEDI_API_KEY"] = "your-actual-api-key"
 
 # Make a request
 response = request_1()
 print(response.json())
 ```
 
+**Note:** The API key is retrieved from:
+1. Streamlit secrets (`st.secrets["STEDI_API_KEY"]`) when running in Streamlit
+2. Environment variable (`STEDI_API_KEY`) when running as CLI or module
+3. `--api-key` flag when using the CLI
+
 ## Streamlit Web UI
 
 A Streamlit web application is available for running requests interactively:
 
+**Setup:**
+1. Create a `.streamlit/secrets.toml` file in your project directory:
+```toml
+STEDI_API_KEY = "your-api-key-here"
+```
+
+2. Run the app:
 ```bash
-streamlit run streamlit_app.py
+streamlit run app.py
 ```
 
 This will open a web browser with an interactive UI where you can:
 - **Run individual requests**: Select a request from a dropdown and execute it
 - **Run all requests**: Execute all 21 requests sequentially with progress tracking
 - **View results**: See status codes, response times, and full response bodies
-- **Configure API key**: Update your API key directly in the UI (password-protected)
+- **API key**: Automatically loaded from Streamlit secrets
 
 Features:
 - 📊 Real-time progress tracking for batch runs

@@ -7,7 +7,7 @@ import streamlit as st
 import requests
 import json
 import time
-from sample_requests import REQUESTS, API_KEY, BASE_URL
+from sample_requests import REQUESTS, BASE_URL, get_api_key
 import sample_requests
 
 # Initialize request functions
@@ -33,20 +33,6 @@ st.markdown("---")
 # Sidebar for configuration
 with st.sidebar:
     st.header("⚙️ Configuration")
-    
-    # API Key input
-    api_key = st.text_input(
-        "API Key",
-        value=API_KEY,
-        type="password",
-        help="Enter your Stedi Healthcare API key"
-    )
-    
-    # Update API key in module
-    if api_key != API_KEY:
-        sample_requests.API_KEY = api_key
-    
-    st.markdown("---")
     
     # Base URL
     st.text_input("Base URL", value=BASE_URL, disabled=True)

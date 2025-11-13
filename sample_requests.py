@@ -8,10 +8,37 @@ import requests
 import json
 import argparse
 import sys
-from typing import Dict, Callable, Any
-API_KEY = "miUeY1a.lp5y3QhegevuPqoRAM5mnsBB"
-#API_KEY = "test_lxoEVa3.ZA5zWb9Y1EPDAUgXdP2S1HVf"
+import os
+from typing import Dict, Callable, Any, Optional
+
 BASE_URL = "https://healthcare.us.stedi.com/2024-04-01"
+
+# Global variable to store API key (set by Streamlit or CLI)
+_api_key: Optional[str] = None
+
+def get_api_key() -> str:
+    """Get API key from Streamlit secrets, environment variable, or global variable."""
+    global _api_key
+    
+    # Try Streamlit secrets first (when running in Streamlit)
+    try:
+        import streamlit as st
+        if "STEDI_API_KEY" in st.secrets:
+            return st.secrets["STEDI_API_KEY"]
+    except (ImportError, RuntimeError):
+        pass  # Not running in Streamlit
+    
+    # Try environment variable
+    env_key = os.getenv("STEDI_API_KEY")
+    if env_key:
+        return env_key
+    
+    # Use global variable if set
+    if _api_key:
+        return _api_key
+    
+    # Fallback for CLI usage
+    raise ValueError("API key not found. Set STEDI_API_KEY environment variable or use --api-key flag.")
 
 # Registry of all available requests
 REQUESTS: Dict[int, Dict[str, Any]] = {
@@ -44,7 +71,7 @@ def request_1():
     """"""
     url = f"{BASE_URL}/change/medicalnetwork/claimstatus/v2"
     headers = {
-        "Authorization": API_KEY,
+        "Authorization": get_api_key(),
         "Content-Type": "application/json"
     }
     payload = {
@@ -69,7 +96,7 @@ def request_2():
     """"""
     url = f"{BASE_URL}/change/medicalnetwork/claimstatus/v2/raw-x12"
     headers = {
-        "Authorization": API_KEY,
+        "Authorization": get_api_key(),
         "Content-Type": "application/json"
     }
     payload = {
@@ -84,7 +111,7 @@ def request_3():
     """"""
     url = f"{BASE_URL}/change/medicalnetwork/eligibility/v3"
     headers = {
-        "Authorization": API_KEY,
+        "Authorization": get_api_key(),
         "Content-Type": "application/json"
     }
     payload = {
@@ -109,7 +136,7 @@ def request_4():
     """"""
     url = f"{BASE_URL}/change/medicalnetwork/eligibility/v3/raw-x12"
     headers = {
-        "Authorization": API_KEY,
+        "Authorization": get_api_key(),
         "Content-Type": "application/json"
     }
     payload = {
@@ -124,7 +151,7 @@ def request_5():
     """"""
     url = f"{BASE_URL}/change/medicalnetwork/institutionalclaims/v1/raw-x12-submission"
     headers = {
-        "Authorization": API_KEY,
+        "Authorization": get_api_key(),
         "Content-Type": "application/json"
     }
     payload = {
@@ -139,7 +166,7 @@ def request_6():
     """"""
     url = f"{BASE_URL}/change/medicalnetwork/institutionalclaims/v1/submission"
     headers = {
-        "Authorization": API_KEY,
+        "Authorization": get_api_key(),
         "Content-Type": "application/json"
     }
     payload = {
@@ -199,7 +226,7 @@ def request_7():
     """"""
     url = f"{BASE_URL}/change/medicalnetwork/professionalclaims/v3/raw-x12-submission"
     headers = {
-        "Authorization": API_KEY,
+        "Authorization": get_api_key(),
         "Content-Type": "application/json"
     }
     payload = {
@@ -214,7 +241,7 @@ def request_8():
     """"""
     url = f"{BASE_URL}/change/medicalnetwork/professionalclaims/v3/submission"
     headers = {
-        "Authorization": API_KEY,
+        "Authorization": get_api_key(),
         "Content-Type": "application/json"
     }
     payload = {
@@ -275,7 +302,7 @@ def request_9():
     """"""
     url = f"{BASE_URL}/change/medicalnetwork/reports/v2/123456789/277"
     headers = {
-        "Authorization": API_KEY,
+        "Authorization": get_api_key(),
         "Content-Type": "application/json"
     }
     response = requests.get(url, headers=headers)
@@ -287,7 +314,7 @@ def request_10():
     """"""
     url = f"{BASE_URL}/change/medicalnetwork/reports/v2/123456789/835"
     headers = {
-        "Authorization": API_KEY,
+        "Authorization": get_api_key(),
         "Content-Type": "application/json"
     }
     response = requests.get(url, headers=headers)
@@ -299,7 +326,7 @@ def request_11():
     """"""
     url = f"{BASE_URL}/coordination-of-benefits"
     headers = {
-        "Authorization": API_KEY,
+        "Authorization": get_api_key(),
         "Content-Type": "application/json"
     }
     payload = {
@@ -323,7 +350,7 @@ def request_12():
     """"""
     url = f"{BASE_URL}/dental-claims/raw-x12-submission"
     headers = {
-        "Authorization": API_KEY,
+        "Authorization": get_api_key(),
         "Content-Type": "application/json"
     }
     payload = {
@@ -338,7 +365,7 @@ def request_13():
     """"""
     url = f"{BASE_URL}/dental-claims/submission"
     headers = {
-        "Authorization": API_KEY,
+        "Authorization": get_api_key(),
         "Content-Type": "application/json"
     }
     payload = {
@@ -382,7 +409,7 @@ def request_14():
     """"""
     url = f"{BASE_URL}/export/pdf"
     headers = {
-        "Authorization": API_KEY,
+        "Authorization": get_api_key(),
         "Content-Type": "application/json"
     }
     params = {
@@ -397,7 +424,7 @@ def request_15():
     """"""
     url = f"{BASE_URL}/export/123456789/1500/pdf"
     headers = {
-        "Authorization": API_KEY,
+        "Authorization": get_api_key(),
         "Content-Type": "application/json"
     }
     response = requests.get(url, headers=headers)
@@ -409,7 +436,7 @@ def request_16():
     """"""
     url = f"{BASE_URL}/insurance-discovery/check/v1"
     headers = {
-        "Authorization": API_KEY,
+        "Authorization": get_api_key(),
         "Content-Type": "application/json"
     }
     payload = {
@@ -430,7 +457,7 @@ def request_17():
     """"""
     url = f"{BASE_URL}/insurance-discovery/check/v1/123456789"
     headers = {
-        "Authorization": API_KEY,
+        "Authorization": get_api_key(),
         "Content-Type": "application/json"
     }
     response = requests.get(url, headers=headers)
@@ -442,7 +469,7 @@ def request_18():
     """"""
     url = f"{BASE_URL}/payer/123456789"
     headers = {
-        "Authorization": API_KEY,
+        "Authorization": get_api_key(),
         "Content-Type": "application/json"
     }
     response = requests.get(url, headers=headers)
@@ -454,7 +481,7 @@ def request_19():
     """"""
     url = f"{BASE_URL}/payers"
     headers = {
-        "Authorization": API_KEY,
+        "Authorization": get_api_key(),
         "Content-Type": "application/json"
     }
     response = requests.get(url, headers=headers)
@@ -466,7 +493,7 @@ def request_20():
     """"""
     url = f"{BASE_URL}/payers/csv"
     headers = {
-        "Authorization": API_KEY,
+        "Authorization": get_api_key(),
         "Content-Type": "application/json"
     }
     response = requests.get(url, headers=headers)
@@ -478,7 +505,7 @@ def request_21():
     """"""
     url = f"{BASE_URL}/payers/search"
     headers = {
-        "Authorization": API_KEY,
+        "Authorization": get_api_key(),
         "Content-Type": "application/json"
     }
     response = requests.get(url, headers=headers)
@@ -629,15 +656,15 @@ Examples:
     
     parser.add_argument(
         "--api-key",
-        help=f"Override API key (default: uses API_KEY from script)"
+        help="Override API key (default: uses STEDI_API_KEY environment variable or st.secrets)"
     )
     
     args = parser.parse_args()
     
     # Override API key if provided
-    global API_KEY
+    global _api_key
     if args.api_key:
-        API_KEY = args.api_key
+        _api_key = args.api_key
     
     # Initialize request functions
     for req_id in REQUESTS:

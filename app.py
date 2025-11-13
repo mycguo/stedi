@@ -7,6 +7,9 @@ import streamlit as st
 import requests
 import json
 import time
+import inspect
+import ast
+import re
 from stedi_request import REQUESTS, BASE_URL, get_api_key
 import stedi_request
 
@@ -14,6 +17,93 @@ import stedi_request
 for req_id in REQUESTS:
     func_name = f"request_{req_id}"
     REQUESTS[req_id]["func"] = getattr(stedi_request, func_name, None)
+
+def extract_payload_from_function(func):
+    """Extract payload from a request function."""
+    if not func:
+        return None
+    
+    try:
+        source = inspect.getsource(func)
+        
+        # Find payload assignment
+        if 'payload = {' not in source:
+            return None
+        
+        # Extract the payload dictionary
+        lines = source.split('\n')
+        payload_start_idx = None
+        
+        for i, line in enumerate(lines):
+            if 'payload = {' in line:
+                payload_start_idx = i
+                break
+        
+        if payload_start_idx is None:
+            return None
+        
+        # Find the end of the payload dict by counting braces
+        payload_lines = []
+        brace_count = 0
+        in_payload = False
+        
+        for i in range(payload_start_idx, len(lines)):
+            line = lines[i]
+            if 'payload = {' in line:
+                in_payload = True
+                # Extract just the dict part
+                dict_start = line.find('{')
+                payload_lines.append(line[dict_start:])
+                brace_count = line[dict_start:].count('{') - line[dict_start:].count('}')
+            elif in_payload:
+                payload_lines.append(line)
+                brace_count += line.count('{') - line.count('}')
+                if brace_count == 0:
+                    break
+        
+        if not payload_lines:
+            return None
+        
+        # Reconstruct payload code
+        payload_code = '\n'.join(payload_lines)
+        
+        # Try to evaluate it safely
+        try:
+            # Create a minimal context
+            context = {
+                'BASE_URL': BASE_URL,
+                'get_api_key': get_api_key,
+            }
+            local_vars = {}
+            exec(f"payload = {payload_code}", context, local_vars)
+            return local_vars.get('payload')
+        except Exception as e:
+            # Fallback: try to parse as JSON-like structure
+            try:
+                # Replace Python None with null, True/False with true/false
+                json_str = payload_code.replace('None', 'null').replace('True', 'true').replace('False', 'false')
+                # Remove trailing comma issues
+                json_str = json_str.replace(',\n}', '\n}').replace(',\n]', '\n]')
+                return json.loads(json_str)
+            except:
+                return None
+    except Exception as e:
+        return None
+
+def execute_request_with_payload(req_id, payload, headers, url, method):
+    """Execute a request with custom payload."""
+    if method == "GET":
+        return requests.get(url, headers=headers)
+    elif method == "POST":
+        return requests.post(url, headers=headers, json=payload)
+    elif method == "PUT":
+        return requests.put(url, headers=headers, json=payload)
+    elif method == "PATCH":
+        return requests.patch(url, headers=headers, json=payload)
+    elif method == "DELETE":
+        return requests.delete(url, headers=headers)
+    else:
+        raise ValueError(f"Unsupported method: {method}")
 
 # Page configuration
 st.set_page_config(
@@ -25,6 +115,8 @@ st.set_page_config(
 # Initialize session state
 if 'request_results' not in st.session_state:
     st.session_state.request_results = {}
+if 'edited_payloads' not in st.session_state:
+    st.session_state.edited_payloads = {}
 
 # Title
 st.title("🏥 Stedi Healthcare API Request Runner")
@@ -78,6 +170,43 @@ if run_mode == "Single Request":
         
         if req_info.get('description'):
             st.write(f"**Description:** {req_info['description']}")
+        
+        # Extract and display payload
+        func = req_info['func']
+        default_payload = None
+        
+        if func and req_info['method'] in ['POST', 'PUT', 'PATCH']:
+            # Try to extract payload from function
+            default_payload = extract_payload_from_function(func)
+        
+        # Initialize edited payload in session state if not exists
+        payload_key = f"payload_{selected_id}"
+        if payload_key not in st.session_state.edited_payloads:
+            st.session_state.edited_payloads[payload_key] = default_payload
+        
+        # Display editable payload
+        if default_payload is not None:
+            st.markdown("---")
+            st.subheader("📝 Request Payload (Editable)")
+            
+            # Use text area for editing (more reliable than json_editor)
+            payload_json = json.dumps(st.session_state.edited_payloads[payload_key], indent=2)
+            edited_json = st.text_area(
+                "Edit Payload (JSON):",
+                value=payload_json,
+                height=300,
+                key=f"payload_text_{selected_id}",
+                help="Modify the JSON payload below. Changes will be used when you click 'Run Request'."
+            )
+            try:
+                parsed_payload = json.loads(edited_json)
+                st.session_state.edited_payloads[payload_key] = parsed_payload
+                st.success("✓ Valid JSON")
+            except json.JSONDecodeError as e:
+                st.error(f"Invalid JSON format: {str(e)}")
+                # Keep the previous valid payload
+                if st.session_state.edited_payloads[payload_key] is None:
+                    st.session_state.edited_payloads[payload_key] = default_payload
     
     # Run button
     col1, col2, col3 = st.columns([1, 1, 4])
@@ -98,8 +227,83 @@ if run_mode == "Single Request":
                 if not func:
                     st.error(f"Request function {selected_id} not found!")
                 else:
+                    # Get URL and headers from function
+                    source = inspect.getsource(func)
+                    url = BASE_URL + req_info['path']
+                    headers = {
+                        "Authorization": get_api_key(),
+                        "Content-Type": "application/json"
+                    }
+                    
+                    # Try to extract actual URL from function (handles path parameters)
+                    try:
+                        # Look for URL assignment in function source
+                        for line in source.split('\n'):
+                            if 'url = f"' in line:
+                                # Extract f-string and evaluate it
+                                # Find the f-string content
+                                start_idx = line.find('f"') + 2
+                                end_idx = line.rfind('"')
+                                if end_idx > start_idx:
+                                    url_template = line[start_idx:end_idx]
+                                    # Replace {BASE_URL} with actual BASE_URL
+                                    url_template = url_template.replace('{BASE_URL}', BASE_URL)
+                                    
+                                    # Extract any variables from the f-string
+                                    # Look for variable references like {variable_name}
+                                    var_pattern = r'\{(\w+)\}'
+                                    variables = re.findall(var_pattern, url_template)
+                                    
+                                    # Try to get variable values from function source
+                                    for var_name in variables:
+                                        if var_name == 'BASE_URL':
+                                            continue
+                                        # Look for variable assignment
+                                        for func_line in source.split('\n'):
+                                            if f'{var_name} = ' in func_line:
+                                                try:
+                                                    var_value = func_line.split('=')[1].strip().strip('"').strip("'")
+                                                    url_template = url_template.replace(f'{{{var_name}}}', var_value)
+                                                except:
+                                                    pass
+                                    
+                                    url = url_template
+                                    break
+                            elif 'url = "' in line and BASE_URL in line:
+                                # Simple string URL
+                                url_match = re.search(r'url = "([^"]+)"', line)
+                                if url_match:
+                                    url = url_match.group(1).replace('{BASE_URL}', BASE_URL)
+                                    break
+                    except Exception as e:
+                        # Fallback to default URL construction
+                        pass
+                    
+                    # Get edited payload or use default
+                    payload_key = f"payload_{selected_id}"
+                    payload = st.session_state.edited_payloads.get(payload_key)
+                    
+                    # If no edited payload, try to extract from function
+                    if payload is None:
+                        payload = extract_payload_from_function(func)
+                    
                     start_time = time.time()
-                    response = func()
+                    
+                    # Execute request with payload
+                    if req_info['method'] == 'GET':
+                        response = requests.get(url, headers=headers)
+                    elif req_info['method'] == 'POST':
+                        response = requests.post(url, headers=headers, json=payload)
+                    elif req_info['method'] == 'PUT':
+                        response = requests.put(url, headers=headers, json=payload)
+                    elif req_info['method'] == 'PATCH':
+                        response = requests.patch(url, headers=headers, json=payload)
+                    elif req_info['method'] == 'DELETE':
+                        response = requests.delete(url, headers=headers)
+                    else:
+                        st.error(f"Unsupported method: {req_info['method']}")
+                        st.stop()
+                    
                     elapsed_time = time.time() - start_time
                     
                     # Store result

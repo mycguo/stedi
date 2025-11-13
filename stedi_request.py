@@ -78,7 +78,7 @@ def request_1():
         "providers": [
                 {
                         "providerType": "BillingProvider",
-                        "npi": "1234567890"
+                        "npi": "1932808896"
                 }
         ],
         "subscriber": {
@@ -419,11 +419,11 @@ def request_11():
     payload = {
         "encounter": {},
         "provider": {
-                "npi": "87726",
+                "npi": "1234567890",
                 "organizationName": "UnitedHealthcare"
         },
         "subscriber": {
-                "dateOfBirth": "20240101",
+                "dateOfBirth": "2024-01-01",
                 "firstName": "EXAMPLE",
                 "lastName": "EXAMPLE"
         },

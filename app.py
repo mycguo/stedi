@@ -7,13 +7,13 @@ import streamlit as st
 import requests
 import json
 import time
-from sample_requests import REQUESTS, BASE_URL, get_api_key
-import sample_requests
+from stedi_request import REQUESTS, BASE_URL, get_api_key
+import stedi_request
 
 # Initialize request functions
 for req_id in REQUESTS:
     func_name = f"request_{req_id}"
-    REQUESTS[req_id]["func"] = getattr(sample_requests, func_name, None)
+    REQUESTS[req_id]["func"] = getattr(stedi_request, func_name, None)
 
 # Page configuration
 st.set_page_config(

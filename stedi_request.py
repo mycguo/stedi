@@ -100,21 +100,23 @@ def request_2():
         "Authorization": get_api_key(),
         "Content-Type": "application/json"
     }
-    # Basic X12 276 Health Care Claim Status Request
-    x12_content = """ISA*00*          *00*          *ZZ*STEDI          *01*123456789      *250101*1200*^*00501*000000001*0*P*:~
-GS*HB*STEDI*123456789*20250101*1200*1*X*005010X212~
+    # X12 276 Health Care Claim Status Request (per Stedi documentation)
+    x12_content = """ISA*00*          *00*          *ZZ*STEDI          *ZZ*RECEIVER       *250101*1200*^*00501*000000001*0*T*>~
+GS*HR*STEDI*RECEIVER*20250101*1200*1*X*005010X212~
 ST*276*0001*005010X212~
 BHT*0010*13*TEST123456*20250101*1200~
 HL*1**20*1~
-NM1*PR*2*60054*****PI*60054~
+NM1*PR*2*UNITEDHEALTHCARE*****PI*87726~
 HL*2*1*21*1~
-NM1*1P*1*EXAMPLE*EXAMPLE****XX*1234567890~
-HL*3*2*22*0~
-TRN*1*123456789*123456789~
-NM1*IL*1*EXAMPLE*EXAMPLE~
+NM1*41*2*EXAMPLE PROVIDER*****46*123456789~
+HL*3*2*19*1~
+NM1*1P*2*EXAMPLE PROVIDER*****XX*1234567890~
+HL*4*3*22*0~
 DMG*D8*19800101~
-DTP*291*D8*20250101~
-SE*13*0001~
+NM1*IL*1*EXAMPLE*JOHN****MI*123456789~
+TRN*1*123456789~
+DTP*472*RD8*20250101-20250107~
+SE*14*0001~
 GE*1*1~
 IEA*1*000000001~"""
     
@@ -212,19 +214,16 @@ N3*456 PATIENT ST~
 N4*CITY*ST*12345~
 DMG*D8*19800101*M~
 NM1*PR*2*10379*****PI*10379~
-CLM*123456*100.00****11:A:1*A*Y~
-DTP*050*RD8*20250101-20250101~
-DTP*435*RD8*20250101-20250101~
-DTP*434*D8*20250101~
-DTP*096*RD8*20250101-20250101~
-DTP*471*TM*1200~
-CL1*1*1*1~
+CLM*123456*100.00***11:A:1**A*Y*Y~
+DTP*434*RD8*20250101-20250101~
+DTP*435*D8*20250101~
+CL1*1*1*01~
 REF*D9*123456~
 HI*BK:Z0000~
 LX*1~
-SV2*0450*HC*99213*UN*100.00~
+SV2*0450*HC:99213*100.00*UN*1~
 DTP*472*D8*20250101~
-SE*30*0001~
+SE*28*0001~
 GE*1*1~
 IEA*1*000000001~"""
     
@@ -277,7 +276,7 @@ def request_6():
                 ]
         },
         "billing": {
-                "npi": "1234567890",
+                "npi": "1932808896",
                 "organizationName": "EXAMPLE BILLING PROVIDER"
         },
         "receiver": {
@@ -419,7 +418,7 @@ def request_11():
     payload = {
         "encounter": {},
         "provider": {
-                "npi": "1234567890",
+                "npi": "1932808896",
                 "organizationName": "UnitedHealthcare"
         },
         "subscriber": {

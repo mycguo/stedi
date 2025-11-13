@@ -193,12 +193,12 @@ if run_mode == "Single Request":
         # Display editable payload
         if default_payload is not None:
             st.markdown("---")
-            st.subheader("📝 Request Payload (Editable)")
-            
-            # Add refresh button
-            col1, col2 = st.columns([1, 10])
+            # Put refresh button on same line as header
+            col1, col2 = st.columns([3, 1])
             with col1:
-                if st.button("🔄 Refresh from Code", key=f"refresh_btn_{selected_id}", help="Reload payload from function source code"):
+                st.subheader("📝 Request Payload (Editable)")
+            with col2:
+                if st.button("🔄 Refresh from Code", key=f"refresh_btn_{selected_id}", help="Reload payload from function source code", use_container_width=True):
                     st.session_state.edited_payloads[payload_key] = default_payload
                     st.session_state[refresh_key] = True
                     st.rerun()

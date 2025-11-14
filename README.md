@@ -3,9 +3,8 @@
 This repository contains a Python script to generate sample requests from the Stedi Healthcare OpenAPI specification.
 
 Payer: https://www.stedi.com/healthcare/network  
-API Key: https://portal.stedi.com/app/settings/api-keys?account=6a97ba34-1d98-4102-8954-ca02f253dcbc
+API Key: https://portal.stedi.com/app/settings/api-keys
 
-test_JFyME6G.VSSis3ZG4m1iFPds82ndIc8m
 
 ## Setup
 

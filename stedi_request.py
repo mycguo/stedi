@@ -40,6 +40,18 @@ def get_api_key() -> str:
     # Fallback for CLI usage
     raise ValueError("API key not found. Set STEDI_API_KEY environment variable or use --api-key flag.")
 
+_usage_indicator: str = "T"
+
+def set_usage_indicator(value: str):
+    """Set the global usage indicator (T for test, P for production)."""
+    global _usage_indicator
+    if value in ["T", "P"]:
+        _usage_indicator = value
+
+def get_usage_indicator() -> str:
+    """Get the current usage indicator."""
+    return _usage_indicator
+
 # Registry of all available requests
 REQUESTS: Dict[int, Dict[str, Any]] = {
     1: {"func": None, "method": "POST", "path": "/change/medicalnetwork/claimstatus/v2", "description": "Submit a 276/277 real-time claim status check in JSON format"},
@@ -187,14 +199,13 @@ IEA*1*000000001~"""
 
 # Request 5: POST /change/medicalnetwork/institutionalclaims/v1/raw-x12-submission
 def request_5():
-    """Submit an 837I institutional claim in raw X12 EDI format"""
+    """"""
     url = f"{BASE_URL}/change/medicalnetwork/institutionalclaims/v1/raw-x12-submission"
     headers = {
         "Authorization": get_api_key(),
         "Content-Type": "application/json"
     }
-    # X12 837I Institutional Claim (5010 format)
-    # This is a complete X12 EDI transaction set for institutional claims
+    # Basic X12 837I Institutional Claim
     x12_content = """ISA*00*          *00*          *ZZ*STEDI          *01*123456789      *250101*1200*^*00501*000000001*0*P*:~
 GS*HC*STEDI*123456789*20250101*1200*1*X*005010X223A2~
 ST*837*0001*005010X223A2~
@@ -204,7 +215,7 @@ PER*IC*CONTACT*TE*5551234567~
 NM1*40*2*EXAMPLE SUBMITTER*****46*123456789~
 HL*1**20*1~
 PRV*BI*PXC*207Q00000X~
-NM1*85*2*EXAMPLE BILLING PROVIDER*****XX*1932808896~
+NM1*85*2*EXAMPLE BILLING PROVIDER*****XX*1234567890~
 N3*123 MAIN ST~
 N4*CITY*ST*12345~
 REF*EI*123456789~
@@ -230,111 +241,116 @@ IEA*1*000000001~"""
     
     payload = {
         "x12": x12_content
-    }
+}
     response = requests.post(url, headers=headers, json=payload)
     return response
 
 
 # Request 6: POST /change/medicalnetwork/institutionalclaims/v1/submission
 def request_6():
-    """Submit 837I institutional claim in JSON format"""
+    """"""
     url = f"{BASE_URL}/change/medicalnetwork/institutionalclaims/v1/submission"
     headers = {
         "Authorization": get_api_key(),
         "Content-Type": "application/json"
     }
     payload = {
-        "usageIndicator": "T",
-        "tradingPartnerName": "Tufts Health Plan",
+        "usageIndicator": get_usage_indicator(),
+        "tradingPartnerName": "EXAMPLE PAYER",
         "tradingPartnerServiceId": "10379",
         "submitter": {
-            "organizationName": "EXAMPLE SUBMITTER",
-            "contactInformation": {
-                "name": "Contact Name",
-                "phoneNumber": "5551234567"
-            },
-            "taxId": "123456789"
+                "organizationName": "EXAMPLE",
+                "contactInformation": {
+                        "name": "EXAMPLE CONTACT",
+                        "phoneNumber": "5551234567"
+                },
+                "taxId": "123456789"
         },
         "receiver": {
-            "organizationName": "Tufts Health Plan"
+                "organizationName": "EXAMPLE"
         },
         "subscriber": {
-            "memberId": "123456789",
-            "paymentResponsibilityLevelCode": "P",
-            "firstName": "EXAMPLE",
-            "lastName": "EXAMPLE",
-            "groupNumber": "67890",
-            "dateOfBirth": "19800101",
-            "gender": "M"
+                "memberId": "123456789",
+                "paymentResponsibilityLevelCode": "P",
+                "firstName": "EXAMPLE",
+                "lastName": "EXAMPLE",
+                "gender": "M",
+                "dateOfBirth": "19800101",
+                "address": {
+                        "address1": "123 MAIN ST",
+                        "city": "ANYTOWN",
+                        "state": "NY",
+                        "postalCode": "100011234"
+                }
         },
         "claimInformation": {
-            "claimFilingCode": "11",
-            "patientControlNumber": "123456",
-            "claimChargeAmount": "100.00",
-            "placeOfServiceCode": "21",
-            "claimFrequencyCode": "1",
-            "planParticipationCode": "A",
-            "benefitsAssignmentCertificationIndicator": "Y",
-            "releaseInformationCode": "Y",
-            "principalDiagnosis": {
-                "qualifierCode": "ABK",
-                "principalDiagnosisCode": "Z0000"
-            },
-            "serviceLines": [
-                {
-                    "assignedNumber": "1",
-                    "serviceDate": "20240101",
-                    "serviceDateEnd": "20240101",
-                    "lineItemControlNumber": "LINE001",
-                    "institutionalService": {
-                        "serviceLineRevenueCode": "0450",
-                        "lineItemChargeAmount": "100.00",
-                        "measurementUnit": "UN",
-                        "serviceUnitCount": "1",
-                        "procedureIdentifier": "HC",
-                        "procedureCode": "99213"
-                    }
+                "claimFilingCode": "ZZ",
+                "patientControlNumber": "123456",
+                "claimChargeAmount": "100.00",
+                "placeOfServiceCode": "11",
+                "claimFrequencyCode": "0",
+                "planParticipationCode": "C",
+                "benefitsAssignmentCertificationIndicator": "Y",
+                "releaseInformationCode": "Y",
+                "principalDiagnosis": {
+                        "qualifierCode": "ABK",
+                        "principalDiagnosisCode": "Z0000"
+                },
+                "serviceLines": [
+                        {
+                                "assignedNumber": "0",
+                                "serviceDate": "20240101",
+                                "serviceDateEnd": "20240101",
+                                "lineItemControlNumber": "111222333",
+                                "institutionalService": {
+                                        "serviceLineRevenueCode": "0450",
+                                        "lineItemChargeAmount": "100.00",
+                                        "measurementUnit": "UN",
+                                        "serviceUnitCount": "1",
+                                        "procedureIdentifier": "HC",
+                                        "procedureCode": "99213"
+                                }
+                        }
+                ],
+                "claimCodeInformation": {
+                        "admissionTypeCode": "1",
+                        "admissionSourceCode": "7",
+                        "patientStatusCode": "01"
+                },
+                "claimDateInformation": {
+                        "admissionDateAndHour": "202401010800",
+                        "statementBeginDate": "20240101",
+                        "statementEndDate": "20240101"
                 }
-            ],
-            "claimCodeInformation": {
-                "admissionTypeCode": "1",
-                "admissionSourceCode": "1",
-                "patientStatusCode": "01"
-            },
-            "claimDateInformation": {
-                "admissionDateAndHour": "202401010800",
-                "statementBeginDate": "20240101",
-                "statementEndDate": "20240101"
-            }
         },
         "providers": [
-            {
-                "providerType": "BillingProvider",
-                "npi": "1932808896",
-                "employerId": "123456789",
-                "organizationName": "EXAMPLE BILLING PROVIDER",
-                "address": {
-                    "address1": "123 Main St",
-                    "city": "Anytown",
-                    "state": "MA",
-                    "postalCode": "021151234"
+                {
+                        "providerType": "BillingProvider",
+                        "npi": "1932808896",
+                        "employerId": "123456789",
+                        "organizationName": "EXAMPLE BILLING PROVIDER",
+                        "address": {
+                                "address1": "123 BILLING ST",
+                                "city": "ANYTOWN",
+                                "state": "NY",
+                                "postalCode": "100011234"
+                        },
+                        "contactInformation": {
+                                "name": "EXAMPLE BILLING PROVIDER",
+                                "phoneNumber": "5551234567"
+                        }
                 },
-                "contactInformation": {
-                    "name": "Contact Name",
-                    "phoneNumber": "5551234567"
+                {
+                        "providerType": "AttendingProvider",
+                        "npi": "1003000126",
+                        "firstName": "JANE",
+                        "lastName": "DOE",
+                        "contactInformation": {
+                                "name": "JANE DOE"
+                        }
                 }
-            },
-            {
-                "providerType": "AttendingProvider",
-                "npi": "1083640692",
-                "firstName": "EXAMPLE",
-                "lastName": "PROVIDER",
-                "contactInformation": {
-                    "name": "EXAMPLE PROVIDER"
-                }
-            }
         ]
-    }
+}
     response = requests.post(url, headers=headers, json=payload)
     return response
 
@@ -365,13 +381,13 @@ def request_8():
     payload = {
         "billing": {
                 "npi": "1932808896",
-                "employerId": "123456789",
                 "organizationName": "EXAMPLE BILLING PROVIDER",
+                "employerId": "123456789",
                 "address": {
-                        "address1": "123 Main St",
-                        "city": "Anytown",
-                        "state": "MA",
-                        "postalCode": "02115"
+                        "address1": "123 BILLING ST",
+                        "city": "ANYTOWN",
+                        "state": "NY",
+                        "postalCode": "10001"
                 }
         },
         "claimInformation": {
@@ -398,7 +414,7 @@ def request_8():
                                                 ]
                                         },
                                         "lineItemChargeAmount": "100.00",
-                                        "measurementUnit": "MJ",
+                                        "measurementUnit": "UN",
                                         "procedureCode": "99213",
                                         "procedureIdentifier": "ER",
                                         "serviceUnitCount": "1"
@@ -413,9 +429,8 @@ def request_8():
         },
         "submitter": {
                 "organizationName": "EXAMPLE SUBMITTER",
-                "submitterIdentification": "1932808896",
                 "contactInformation": {
-                        "name": "Contact Name",
+                        "name": "EXAMPLE CONTACT",
                         "phoneNumber": "5551234567"
                 }
         },
@@ -424,13 +439,17 @@ def request_8():
                 "lastName": "DOE",
                 "memberId": "123456789",
                 "dateOfBirth": "19800101",
-                "gender": "M"
+                "gender": "M",
+                "address": {
+                        "address1": "123 MAIN ST",
+                        "city": "ANYTOWN",
+                        "state": "NY",
+                        "postalCode": "10001"
+                }
         },
-        "tradingPartnerServiceId": "10379"
+        "tradingPartnerServiceId": "10379",
+        "usageIndicator": get_usage_indicator()
 }
-    # Debug: Verify billing.npi exists before sending
-    if "billing" not in payload or "npi" not in payload.get("billing", {}):
-        raise ValueError("billing.npi is missing from payload!")
     response = requests.post(url, headers=headers, json=payload)
     return response
 

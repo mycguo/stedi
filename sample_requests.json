@@ -93,10 +93,10 @@
   },
   {
     "method": "POST",
-    "path": "/change/medicalnetwork/institutionalclaims/v1/submission",
+    "path": "/2024-04-01/change/medicalnetwork/institutionalclaims/v1/submission",
     "summary": "",
     "description": "Submit an 837I institutional claim in JSON format",
-    "url": "https://healthcare.us.stedi.com/change/medicalnetwork/institutionalclaims/v1/submission",
+    "url": "https://healthcare.us.stedi.com/2024-04-01/change/medicalnetwork/institutionalclaims/v1/submission",
     "headers": {
       "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
@@ -104,52 +104,101 @@
     "query_params": {},
     "path_params": {},
     "body": {
-      "claimInformation": {
-        "benefitsAssignmentCertificationIndicator": "N",
-        "claimChargeAmount": "example",
-        "claimCodeInformation": {
-          "admissionTypeCode": "e",
-          "patientStatusCode": "ex"
+      "usageIndicator": "T",
+      "tradingPartnerName": "EXAMPLE PAYER",
+      "tradingPartnerServiceId": "123456789",
+      "submitter": {
+        "organizationName": "EXAMPLE",
+        "contactInformation": {
+          "name": "EXAMPLE CONTACT",
+          "phoneNumber": "5551234567"
         },
-        "claimDateInformation": {
-          "statementBeginDate": "20240101",
-          "statementEndDate": "20240101"
-        },
-        "claimFilingCode": "11",
-        "claimFrequencyCode": "e",
-        "patientControlNumber": "123456",
-        "placeOfServiceCode": "ex",
-        "planParticipationCode": "A",
-        "principalDiagnosis": {
-          "principalDiagnosisCode": "example",
-          "qualifierCode": "ABK"
-        },
-        "releaseInformationCode": "I",
-        "serviceLines": [
-          {
-            "institutionalService": {
-              "lineItemChargeAmount": "example",
-              "measurementUnit": "DA",
-              "serviceLineRevenueCode": "example",
-              "serviceUnitCount": "example"
-            }
-          }
-        ]
+        "taxId": "123456789"
       },
       "receiver": {
         "organizationName": "EXAMPLE"
       },
-      "submitter": {
-        "contactInformation": {},
-        "organizationName": "EXAMPLE",
-        "taxId": "123456789"
-      },
       "subscriber": {
+        "memberId": "123456789",
+        "paymentResponsibilityLevelCode": "P",
         "firstName": "EXAMPLE",
         "lastName": "EXAMPLE",
-        "paymentResponsibilityLevelCode": "A"
+        "gender": "M",
+        "dateOfBirth": "19800101",
+        "address": {
+          "address1": "123 MAIN ST",
+          "city": "ANYTOWN",
+          "state": "NY",
+          "postalCode": "100011234"
+        }
       },
-      "tradingPartnerServiceId": "123456789"
+      "claimInformation": {
+        "claimFilingCode": "ZZ",
+        "patientControlNumber": "123456",
+        "claimChargeAmount": "100.00",
+        "placeOfServiceCode": "11",
+        "claimFrequencyCode": "0",
+        "planParticipationCode": "C",
+        "benefitsAssignmentCertificationIndicator": "Y",
+        "releaseInformationCode": "Y",
+        "principalDiagnosis": {
+          "qualifierCode": "ABK",
+          "principalDiagnosisCode": "Z0000"
+        },
+        "serviceLines": [
+          {
+            "assignedNumber": "0",
+            "serviceDate": "20240101",
+            "serviceDateEnd": "20240101",
+            "lineItemControlNumber": "111222333",
+            "institutionalService": {
+              "serviceLineRevenueCode": "0450",
+              "lineItemChargeAmount": "100.00",
+              "measurementUnit": "UN",
+              "serviceUnitCount": "1",
+              "procedureIdentifier": "HC",
+              "procedureCode": "99213"
+            }
+          }
+        ],
+        "claimCodeInformation": {
+          "admissionTypeCode": "1",
+          "admissionSourceCode": "7",
+          "patientStatusCode": "01"
+        },
+        "claimDateInformation": {
+          "admissionDateAndHour": "202401010800",
+          "statementBeginDate": "20240101",
+          "statementEndDate": "20240101"
+        }
+      },
+      "providers": [
+        {
+          "providerType": "BillingProvider",
+          "npi": "1932808896",
+          "employerId": "123456789",
+          "organizationName": "EXAMPLE BILLING PROVIDER",
+          "address": {
+            "address1": "123 BILLING ST",
+            "city": "ANYTOWN",
+            "state": "NY",
+            "postalCode": "10001"
+          },
+          "contactInformation": {
+            "name": "EXAMPLE BILLING PROVIDER",
+            "phoneNumber": "5551234567"
+          }
+        },
+        {
+          "providerType": "AttendingProvider",
+          "npi": "1932808896",
+          "firstName": "Doctor",
+          "lastName": "Provider",
+          "contactInformation": {
+            "name": "Doctor Provider"
+          }
+        }
+      ]
     }
   },
   {
@@ -181,7 +230,17 @@
     "query_params": {},
     "path_params": {},
     "body": {
-      "billing": {},
+      "billing": {
+        "npi": "1932808896",
+        "organizationName": "EXAMPLE BILLING PROVIDER",
+        "employerId": "123456789",
+        "address": {
+          "address1": "123 BILLING ST",
+          "city": "ANYTOWN",
+          "state": "NY",
+          "postalCode": "10001"
+        }
+      },
       "claimInformation": {
         "benefitsAssignmentCertificationIndicator": "N",
         "claimChargeAmount": "example",
@@ -206,7 +265,7 @@
                 ]
               },
               "lineItemChargeAmount": "example",
-              "measurementUnit": "MJ",
+              "measurementUnit": "UN",
               "procedureCode": "example",
               "procedureIdentifier": "ER",
               "serviceUnitCount": "example"
@@ -220,9 +279,22 @@
         "organizationName": "EXAMPLE"
       },
       "submitter": {
-        "contactInformation": {}
+        "organizationName": "EXAMPLE SUBMITTER",
+        "contactInformation": {
+          "name": "EXAMPLE CONTACT",
+          "phoneNumber": "5551234567"
+        }
       },
-      "subscriber": {},
+      "subscriber": {
+        "dateOfBirth": "19800101",
+        "gender": "M",
+        "address": {
+          "address1": "123 MAIN ST",
+          "city": "ANYTOWN",
+          "state": "NY",
+          "postalCode": "10001"
+        }
+      },
       "tradingPartnerServiceId": "123456789"
     }
   },

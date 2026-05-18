@@ -15,6 +15,7 @@ API_REFERENCE_URL = "https://www.stedi.com/docs/healthcare/api-reference"
 HEALTHCARE_OPENAPI_URL = "https://raw.githubusercontent.com/Stedi/openApi/main/healthcare.json"
 HEALTHCARE_BASE_URL = "https://healthcare.us.stedi.com/2024-04-01"
 PAYERS_BASE_URL = "https://payers.us.stedi.com/2024-04-01"
+DOCS_BASE_URL = "https://www.stedi.com"
 BASE_URL = HEALTHCARE_BASE_URL
 
 # Global variable to store API key (set by Streamlit or CLI)
@@ -83,6 +84,32 @@ REQUESTS: Dict[int, Dict[str, Any]] = {
 }
 
 
+REQUEST_DOC_PATHS: Dict[int, str] = {
+    1: "/docs/healthcare/api-reference/post-healthcare-claim-status",
+    2: "/docs/healthcare/api-reference/post-healthcare-claim-status-raw-x12",
+    3: "/docs/healthcare/api-reference/post-healthcare-eligibility",
+    4: "/docs/healthcare/api-reference/post-healthcare-eligibility-raw-x12",
+    5: "/docs/healthcare/api-reference/post-healthcare-institutional-claims-raw-x12",
+    6: "/docs/healthcare/api-reference/post-healthcare-institutional-claims",
+    7: "/docs/healthcare/api-reference/post-healthcare-claims-raw-x12",
+    8: "/docs/healthcare/api-reference/post-healthcare-claims",
+    9: "/docs/healthcare/api-reference/get-healthcare-reports-277",
+    10: "/docs/healthcare/api-reference/get-healthcare-reports-835",
+    11: "/docs/healthcare/api-reference/post-coordination-of-benefits",
+    12: "/docs/healthcare/api-reference/post-healthcare-dental-claims-raw-x12",
+    13: "/docs/healthcare/api-reference/post-healthcare-dental-claims",
+    14: "/docs/healthcare/api-reference/get-pdf-1500-business-identifier",
+    15: "/docs/healthcare/api-reference/get-pdf-1500",
+    16: "/docs/healthcare/api-reference/post-insurance-discovery",
+    17: "/docs/healthcare/api-reference/get-insurance-discovery-results",
+    18: "/docs/healthcare/api-reference/get-payer",
+    19: "/docs/healthcare/api-reference/get-payers",
+    20: "/docs/healthcare/api-reference/get-payers-csv",
+    21: "/docs/healthcare/api-reference/get-search-payers",
+    22: "/docs/healthcare/api-reference/get-era-pdf",
+}
+
+
 def get_request_url(request_id: int, resolve_examples: bool = False) -> str:
     """Return the canonical URL for a registered request."""
     req_info = REQUESTS[request_id]
@@ -93,6 +120,11 @@ def get_request_url(request_id: int, resolve_examples: bool = False) -> str:
             path = path.replace(f"{{{name}}}", value)
 
     return f"{req_info.get('base_url', BASE_URL)}{path}"
+
+
+def get_request_docs_url(request_id: int) -> str:
+    """Return the Stedi documentation page for a registered request."""
+    return f"{DOCS_BASE_URL}{REQUEST_DOC_PATHS[request_id]}"
 
 
 # Request 1: POST /change/medicalnetwork/claimstatus/v2
@@ -865,6 +897,7 @@ def get_request_info(request_id: int) -> None:
     print("="*80)
     if req_info.get('description'):
         print(f"Description: {req_info['description']}")
+    print(f"Docs URL: {get_request_docs_url(request_id)}")
     print(f"Request URL: {get_request_url(request_id, resolve_examples=True)}")
     if req_info.get("path_params"):
         print(f"Template URL: {get_request_url(request_id)}")

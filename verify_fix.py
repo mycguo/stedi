@@ -82,6 +82,10 @@ def assert_migrated_examples() -> None:
         == "https://healthcare.us.stedi.com/2024-04-01/change/medicalnetwork/eligibility/v3"
     )
     assert (
+        stedi_request.get_request_docs_url(1)
+        == "https://www.stedi.com/docs/healthcare/api-reference/post-healthcare-claim-status"
+    )
+    assert (
         stedi_request.get_request_url(19, resolve_examples=True)
         == "https://payers.us.stedi.com/2024-04-01/payers"
     )

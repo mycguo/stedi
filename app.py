@@ -197,7 +197,8 @@ if run_mode == "Single Request":
             st.write(f"**Path:** {req_info['path']}")
         with col2:
             st.write(f"**ID:** {selected_id}")
-            st.write(f"**Request URL:** {get_display_url(selected_id)}")
+            st.write(f"**Docs URL:** {stedi_request.get_request_docs_url(selected_id)}")
+            st.write(f"**API Request URL:** {get_display_url(selected_id)}")
             if req_info.get("path_params"):
                 st.write(f"**Template URL:** {stedi_request.get_request_url(selected_id)}")
         

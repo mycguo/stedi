@@ -1,11 +1,21 @@
 # Stedi Healthcare API Sample Request Generator
 
-This repository contains a Python script to generate sample requests from the Stedi Healthcare OpenAPI specification.
+This repository contains a Python script to generate sample requests from the Stedi Healthcare API reference and a curated request runner for the main healthcare clearinghouse endpoints.
 
-Payer: https://www.stedi.com/healthcare/network  
-API Key: https://portal.stedi.com/app/settings/api-keys?account=6a97ba34-1d98-4102-8954-ca02f253dcbc
+API reference: https://www.stedi.com/docs/healthcare/api-reference
 
-test_JFyME6G.VSSis3ZG4m1iFPds82ndIc8m
+Payer network: https://www.stedi.com/healthcare/network
+
+API keys: https://portal.stedi.com/app/settings/api-keys
+
+The current Stedi reference links multiple OpenAPI specs:
+
+- `healthcare` - claim submission, eligibility, claim status, remittances, insurance discovery, COB, and payers
+- `claim-attachments` - claim attachment submission
+- `batch-eligibility` - batch eligibility manager APIs
+- `transaction-enrollment` - providers, enrollments, tasks, and documents
+- `payers` - payer lookup/list/search APIs
+- `event-destinations` - event retrieval APIs
 
 ## Setup
 
@@ -24,11 +34,21 @@ python3 generate_sample_requests.py
 ```
 
 This will:
-1. Download the OpenAPI specification from the Stedi GitHub repository
+1. Download the main healthcare OpenAPI specification linked from the Stedi API reference
 2. Generate sample requests for all endpoints
-3. Create two output files:
+3. Create generated output files:
    - `sample_requests.json` - JSON file containing all sample requests
-   - `stedi_request.py` - Python script with executable request functions
+   - `sample_requests.py` - generated Python script with executable request functions
+
+Useful generator options:
+
+```bash
+# Show the specs linked from the current API reference
+python3 generate_sample_requests.py --list-specs
+
+# Generate samples from all linked specs
+python3 generate_sample_requests.py --spec all --skip-python
+```
 
 ## Output Files
 
@@ -42,10 +62,10 @@ Contains all sample requests in JSON format with:
 - Request body (if applicable)
 
 ### stedi_request.py
-A Python script with individual functions for each endpoint. Each function:
+A curated Python script with individual functions for the main healthcare spec endpoints. Each function:
 - Uses the `requests` library
 - Includes proper headers
-- Has sample payloads based on the OpenAPI schema
+- Has sample payloads based on the current OpenAPI examples where available
 - Returns the response object
 
 #### Running as a Program
@@ -112,7 +132,7 @@ streamlit run app.py
 
 This will open a web browser with an interactive UI where you can:
 - **Run individual requests**: Select a request from a dropdown and execute it
-- **Run all requests**: Execute all 21 requests sequentially with progress tracking
+- **Run all requests**: Execute all available curated requests sequentially with progress tracking
 - **View results**: See status codes, response times, and full response bodies
 - **API key**: Automatically loaded from Streamlit secrets
 

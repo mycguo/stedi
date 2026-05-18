@@ -1,226 +1,89 @@
+#!/usr/bin/env python3
+"""Local verification for the Stedi request runner migration."""
 
-import requests
 from unittest.mock import MagicMock
 
-# Mock requests.post
-requests.post = MagicMock()
+import requests
 
-# Import the code to test
 import stedi_request
-# Mock get_api_key
-stedi_request.get_api_key = MagicMock(return_value="test_key")
-from stedi_request import request_6, request_8
 
-def verify_fix():
-    print("Verifying Request 6 fix...")
-    
-    # Run the request function
-    try:
-        request_6()
-    except Exception as e:
-        print(f"Error running request_6: {e}")
-        return
 
-    # Check if requests.post was called
-    if not requests.post.called:
-        print("Error: requests.post was not called")
-        return
+EXPECTED_REQUESTS = {
+    1: ("POST", "/change/medicalnetwork/claimstatus/v2"),
+    2: ("POST", "/change/medicalnetwork/claimstatus/v2/raw-x12"),
+    3: ("POST", "/change/medicalnetwork/eligibility/v3"),
+    4: ("POST", "/change/medicalnetwork/eligibility/v3/raw-x12"),
+    5: ("POST", "/change/medicalnetwork/institutionalclaims/v1/raw-x12-submission"),
+    6: ("POST", "/change/medicalnetwork/institutionalclaims/v1/submission"),
+    7: ("POST", "/change/medicalnetwork/professionalclaims/v3/raw-x12-submission"),
+    8: ("POST", "/change/medicalnetwork/professionalclaims/v3/submission"),
+    9: ("GET", "/change/medicalnetwork/reports/v2/{transactionId}/277"),
+    10: ("GET", "/change/medicalnetwork/reports/v2/{transactionId}/835"),
+    11: ("POST", "/coordination-of-benefits"),
+    12: ("POST", "/dental-claims/raw-x12-submission"),
+    13: ("POST", "/dental-claims/submission"),
+    14: ("GET", "/export/pdf"),
+    15: ("GET", "/export/{transactionId}/1500/pdf"),
+    16: ("POST", "/insurance-discovery/check/v1"),
+    17: ("GET", "/insurance-discovery/check/v1/{discoveryId}"),
+    18: ("GET", "/payer/{stediId}"),
+    19: ("GET", "/payers"),
+    20: ("GET", "/payers/csv"),
+    21: ("GET", "/payers/search"),
+    22: ("GET", "/electronic-remittance-advice/{transactionId}/pdf"),
+}
 
-    # Get the arguments passed to requests.post
-    args, kwargs = requests.post.call_args
-    payload = kwargs.get('json')
 
-    if not payload:
-        print("Error: No JSON payload found in requests.post call")
-        return
+def assert_request_registry() -> None:
+    actual = {
+        request_id: (request["method"], request["path"])
+        for request_id, request in stedi_request.REQUESTS.items()
+    }
+    assert actual == EXPECTED_REQUESTS, f"REQUESTS drifted:\nactual={actual}"
 
-    # Check for subscriber fields
-    subscriber = payload.get('subscriber')
-    if not subscriber:
-        print("Error: 'subscriber' object missing in payload")
-        return
 
-    expected_fields = ['dateOfBirth', 'gender', 'address']
-    missing_fields = [field for field in expected_fields if field not in subscriber]
+def assert_all_request_functions_execute() -> None:
+    requests.get = MagicMock(return_value=MagicMock(status_code=200, json=lambda: {}))
+    requests.post = MagicMock(return_value=MagicMock(status_code=200, json=lambda: {}))
+    stedi_request.get_api_key = MagicMock(return_value="test_key")
 
-    if missing_fields:
-        print(f"Error: Missing fields in subscriber: {missing_fields}")
-    else:
-        print("Success: Subscriber contains dateOfBirth, gender, and address.")
-
-    # Check address fields
-    address = subscriber.get('address')
-    if address:
-        expected_addr_fields = ['address1', 'city', 'state', 'postalCode']
-        missing_addr_fields = [field for field in expected_addr_fields if field not in address]
-        if missing_addr_fields:
-            print(f"Error: Missing fields in subscriber address: {missing_addr_fields}")
+    for request_id, (method, _) in EXPECTED_REQUESTS.items():
+        func = getattr(stedi_request, f"request_{request_id}")
+        func()
+        if method == "GET":
+            assert requests.get.called, f"request_{request_id} did not call requests.get"
+            requests.get.reset_mock()
         else:
-            print("Success: Subscriber address contains all required fields.")
-            
-    # Check for billing fields (Request 6 Internal Error Fix)
-    billing = payload.get('billing')
-    if not billing:
-        print("Error: 'billing' object missing in payload")
-    else:
-        if billing.get('employerId'):
-            print("Success: Billing object contains employerId.")
-        else:
-            print("Error: 'employerId' missing in billing")
-            
-        if billing.get('address'):
-            print("Success: Billing object contains address.")
-        else:
-             print("Error: 'address' missing in billing")
-    
-    # Check for submitter contactInformation (Request 6 Internal Error Fix)
-    submitter = payload.get('submitter')
-    if submitter:
-        contact_info = submitter.get('contactInformation')
-        if contact_info:
-            if contact_info.get('name'):
-                print("Success: Submitter contactInformation contains name.")
-            else:
-                print("Error: 'name' missing in submitter contactInformation")
-        else:
-            print("Error: 'contactInformation' missing in submitter")
-    else:
-        print("Error: 'submitter' object missing in payload")
+            assert requests.post.called, f"request_{request_id} did not call requests.post"
+            _, kwargs = requests.post.call_args
+            assert kwargs.get("json"), f"request_{request_id} did not send a JSON payload"
+            requests.post.reset_mock()
 
-    print("\nPayload verification complete.")
 
-    print("\n" + "="*50 + "\n")
-    print("Verifying Request 8 fix...")
-    
-    # Reset mock
-    requests.post.reset_mock()
-    
-    # Run request 8
-    try:
-        request_8()
-    except Exception as e:
-        print(f"Error running request_8: {e}")
-        return
+def assert_migrated_examples() -> None:
+    requests.post = MagicMock(return_value=MagicMock(status_code=200, json=lambda: {}))
+    stedi_request.get_api_key = MagicMock(return_value="test_key")
 
-    # Check if requests.post was called
-    if not requests.post.called:
-        print("Error: requests.post was not called for request_8")
-        return
+    stedi_request.request_3()
+    _, kwargs = requests.post.call_args
+    eligibility_payload = kwargs["json"]
+    assert eligibility_payload["provider"]["npi"] == "1999999984"
+    assert eligibility_payload["provider"]["organizationName"] == "ACME Health Services"
+    assert eligibility_payload["tradingPartnerServiceId"] == "AHS"
 
-    # Get the arguments passed to requests.post
-    args, kwargs = requests.post.call_args
-    payload = kwargs.get('json')
+    requests.get = MagicMock(return_value=MagicMock(status_code=200, json=lambda: {}))
+    stedi_request.request_22()
+    args, kwargs = requests.get.call_args
+    assert "/electronic-remittance-advice/" in args[0]
+    assert kwargs["params"] == {"logo": True}
 
-    if not payload:
-        print("Error: No JSON payload found in requests.post call for request_8")
-        return
 
-    # Check for billing fields
-    billing = payload.get('billing')
-    if not billing:
-        print("Error: 'billing' object missing in payload for request_8")
-        return
+def main() -> None:
+    assert_request_registry()
+    assert_all_request_functions_execute()
+    assert_migrated_examples()
+    print("Verification passed: request registry, request functions, and migrated examples are current.")
 
-    if billing.get('npi') and billing.get('organizationName'):
-        print("Success: Billing object contains npi and organizationName.")
-    else:
-        print(f"Error: Missing fields in billing: {billing}")
-
-    print("\nRequest 8 verification complete.")
-
-    print("\n" + "="*50 + "\n")
-    print("Verifying Request 8 contact info...")
-
-    # Check for submitter contact info
-    submitter = payload.get('submitter')
-    if not submitter:
-        print("Error: 'submitter' object missing in payload for request_8")
-        return
-
-    contact_info = submitter.get('contactInformation')
-    if not contact_info:
-        print("Error: 'contactInformation' object missing in submitter for request_8")
-        return
-
-    expected_contact_fields = ['name', 'phoneNumber']
-    missing_contact_fields = [field for field in expected_contact_fields if field not in contact_info]
-
-    if missing_contact_fields:
-        print(f"Error: Missing fields in submitter.contactInformation: {missing_contact_fields}")
-    else:
-        print("Success: Submitter contact info contains name and phoneNumber.")
-
-    print("\nRequest 8 contact info verification complete.")
-
-    print("\n" + "="*50 + "\n")
-    print("Verifying Request 8 billing address...")
-
-    # Check for billing address
-    billing = payload.get('billing')
-    # Billing object existence already checked in previous step, but safe to re-get
-    
-    billing_address = billing.get('address')
-    if not billing_address:
-        print("Error: 'address' object missing in billing for request_8")
-        return
-
-    expected_addr_fields = ['address1', 'city', 'state', 'postalCode']
-    missing_addr_fields = [field for field in expected_addr_fields if field not in billing_address]
-
-    if missing_addr_fields:
-        print(f"Error: Missing fields in billing.address: {missing_addr_fields}")
-    else:
-        print("Success: Billing address contains all required fields.")
-
-    print("\nRequest 8 billing address verification complete.")
-
-    print("\n" + "="*50 + "\n")
-    print("Verifying Request 8 billing tax ID...")
-
-    if billing.get('employerId'):
-        print("Success: Billing object contains employerId.")
-    else:
-        print("Error: 'employerId' missing in billing for request_8")
-
-    print("\nRequest 8 billing tax ID verification complete.")
-
-    print("\n" + "="*50 + "\n")
-    print("Verifying Request 8 submitter name...")
-
-    if submitter.get('organizationName'):
-        print("Success: Submitter object contains organizationName.")
-    else:
-        print("Error: 'organizationName' missing in submitter for request_8")
-
-    print("\nRequest 8 submitter name verification complete.")
-
-    print("\n" + "="*50 + "\n")
-    print("Verifying Request 8 additional fixes (MeasurementUnit + Subscriber)...")
-
-    # Check Measurement Unit
-    claim_info = payload.get('claimInformation', {})
-    service_lines = claim_info.get('serviceLines', [])
-    if service_lines:
-        prof_service = service_lines[0].get('professionalService', {})
-        unit = prof_service.get('measurementUnit')
-        if unit == 'UN':
-            print("Success: MeasurementUnit is 'UN'.")
-        else:
-            print(f"Error: MeasurementUnit is '{unit}', expected 'UN'.")
-    else:
-        print("Error: No serviceLines found in claimInformation.")
-
-    # Check Subscriber details
-    subscriber = payload.get('subscriber', {})
-    expected_sub_fields = ['dateOfBirth', 'gender', 'address']
-    missing_sub_fields = [field for field in expected_sub_fields if field not in subscriber]
-    
-    if missing_sub_fields:
-        print(f"Error: Missing fields in subscriber: {missing_sub_fields}")
-    else:
-         print("Success: Subscriber contains dateOfBirth, gender, and address.")
-
-    print("\nRequest 8 additional fixes verification complete.")
 
 if __name__ == "__main__":
-    verify_fix()
+    main()

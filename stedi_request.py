@@ -11,6 +11,8 @@ import sys
 import os
 from typing import Dict, Callable, Any, Optional
 
+API_REFERENCE_URL = "https://www.stedi.com/docs/healthcare/api-reference"
+HEALTHCARE_OPENAPI_URL = "https://raw.githubusercontent.com/Stedi/openApi/main/healthcare.json"
 BASE_URL = "https://healthcare.us.stedi.com/2024-04-01"
 
 # Global variable to store API key (set by Streamlit or CLI)
@@ -62,19 +64,20 @@ REQUESTS: Dict[int, Dict[str, Any]] = {
     6: {"func": None, "method": "POST", "path": "/change/medicalnetwork/institutionalclaims/v1/submission", "description": "Submit an 837I institutional claim in JSON format"},
     7: {"func": None, "method": "POST", "path": "/change/medicalnetwork/professionalclaims/v3/raw-x12-submission", "description": "Submit an 837P professional claim in raw X12 EDI format"},
     8: {"func": None, "method": "POST", "path": "/change/medicalnetwork/professionalclaims/v3/submission", "description": "Submit an 837P professional claim in JSON format"},
-    9: {"func": None, "method": "GET", "path": "/change/medicalnetwork/reports/v2/{eligibilitySearchId}/277", "description": "Get 277 claim status report"},
-    10: {"func": None, "method": "GET", "path": "/change/medicalnetwork/reports/v2/{eligibilitySearchId}/835", "description": "Get 835 payment report"},
+    9: {"func": None, "method": "GET", "path": "/change/medicalnetwork/reports/v2/{transactionId}/277", "description": "Get 277 claim acknowledgment report"},
+    10: {"func": None, "method": "GET", "path": "/change/medicalnetwork/reports/v2/{transactionId}/835", "description": "Get 835 ERA report"},
     11: {"func": None, "method": "POST", "path": "/coordination-of-benefits", "description": "Submit coordination of benefits check"},
     12: {"func": None, "method": "POST", "path": "/dental-claims/raw-x12-submission", "description": "Submit dental claim in raw X12 EDI format"},
     13: {"func": None, "method": "POST", "path": "/dental-claims/submission", "description": "Submit dental claim in JSON format"},
     14: {"func": None, "method": "GET", "path": "/export/pdf", "description": "Export PDF"},
-    15: {"func": None, "method": "GET", "path": "/export/{claimId}/1500/pdf", "description": "Export 1500 form PDF"},
+    15: {"func": None, "method": "GET", "path": "/export/{transactionId}/1500/pdf", "description": "Export 1500 form PDF"},
     16: {"func": None, "method": "POST", "path": "/insurance-discovery/check/v1", "description": "Submit insurance discovery check"},
-    17: {"func": None, "method": "GET", "path": "/insurance-discovery/check/v1/{checkId}", "description": "Get insurance discovery check result"},
-    18: {"func": None, "method": "GET", "path": "/payer/{payerId}", "description": "Get payer information"},
+    17: {"func": None, "method": "GET", "path": "/insurance-discovery/check/v1/{discoveryId}", "description": "Get insurance discovery check result"},
+    18: {"func": None, "method": "GET", "path": "/payer/{stediId}", "description": "Get payer information"},
     19: {"func": None, "method": "GET", "path": "/payers", "description": "List all payers"},
     20: {"func": None, "method": "GET", "path": "/payers/csv", "description": "Export payers as CSV"},
     21: {"func": None, "method": "GET", "path": "/payers/search", "description": "Search payers"},
+    22: {"func": None, "method": "GET", "path": "/electronic-remittance-advice/{transactionId}/pdf", "description": "Get 835 ERA PDF"},
 }
 
 
@@ -87,18 +90,24 @@ def request_1():
         "Content-Type": "application/json"
     }
     payload = {
+        "encounter": {
+                "beginningDateOfService": "20250630",
+                "endDateOfService": "20250702"
+        },
         "providers": [
                 {
                         "providerType": "BillingProvider",
-                        "npi": "1932808896"
+                        "npi": "1999999984",
+                        "organizationName": "Provider Name"
                 }
         ],
         "subscriber": {
-                "firstName": "EXAMPLE",
-                "lastName": "EXAMPLE",
-                "memberId": "123456789"
+                "dateOfBirth": "19710101",
+                "firstName": "Jane",
+                "lastName": "Doe",
+                "memberId": "UHC123456"
         },
-        "tradingPartnerServiceId": "60054"
+        "tradingPartnerServiceId": "87726"
 }
     response = requests.post(url, headers=headers, json=payload)
     return response
@@ -112,22 +121,22 @@ def request_2():
         "Authorization": get_api_key(),
         "Content-Type": "application/json"
     }
-    # X12 276 Health Care Claim Status Request (per Stedi documentation)
-    x12_content = """ISA*00*          *00*          *ZZ*STEDI          *ZZ*RECEIVER       *250101*1200*^*00501*000000001*0*T*>~
-GS*HR*STEDI*RECEIVER*20250101*1200*1*X*005010X212~
+    # X12 276 Health Care Claim Status Request from the current Stedi spec.
+    x12_content = """ISA*00*          *00*          *ZZ*SENDER         *ZZ*RECEIVER       *250916*2048*^*00501*000000001*0*T*>~
+GS*HR*SENDERGS*RECEIVERGS*20250916*204811*1*X*005010X212~
 ST*276*0001*005010X212~
-BHT*0010*13*TEST123456*20250101*1200~
+BHT*0010*13*ABC276XXX*20250915*1425~
 HL*1**20*1~
 NM1*PR*2*UNITEDHEALTHCARE*****PI*87726~
 HL*2*1*21*1~
-NM1*41*2*EXAMPLE PROVIDER*****46*123456789~
+NM1*41*2*PROVIDER NAME*****46*123456789~
 HL*3*2*19*1~
-NM1*1P*2*EXAMPLE PROVIDER*****XX*1234567890~
+NM1*1P*2*PROVIDER NAME*****XX*1999999984~
 HL*4*3*22*0~
-DMG*D8*19800101~
-NM1*IL*1*EXAMPLE*JOHN****MI*123456789~
+DMG*D8*19710101~
+NM1*IL*1*DOE*JANE****MI*UHC123456~
 TRN*1*123456789~
-DTP*472*RD8*20250101-20250107~
+DTP*472*RD8*20250630-20250702~
 SE*14*0001~
 GE*1*1~
 IEA*1*000000001~"""
@@ -148,17 +157,23 @@ def request_3():
         "Content-Type": "application/json"
     }
     payload = {
+        "encounter": {
+                "serviceTypeCodes": [
+                        "MH"
+                ]
+        },
+        "externalPatientId": "UAA111222333",
         "provider": {
-                "npi": "87726",
-                "organizationName": "UnitedHealthcare"
+                "npi": "1999999984",
+                "organizationName": "ACME Health Services"
         },
         "subscriber": {
-                "firstName": "JOHN",
-                "lastName": "DOE",
+                "dateOfBirth": "19000101",
+                "firstName": "Jane",
+                "lastName": "Doe",
                 "memberId": "123456789",
-                "dateOfBirth": "19800101"
         },
-        "tradingPartnerServiceId": "10379"
+        "tradingPartnerServiceId": "AHS"
 }
     response = requests.post(url, headers=headers, json=payload)
     return response
@@ -172,22 +187,23 @@ def request_4():
         "Authorization": get_api_key(),
         "Content-Type": "application/json"
     }
-    # Basic X12 270 Health Care Eligibility Benefit Inquiry
-    x12_content = """ISA*00*          *00*          *ZZ*STEDI          *01*123456789      *250101*1200*^*00501*000000001*0*P*:~
-GS*HS*STEDI*123456789*20250101*1200*1*X*005010X279A1~
-ST*270*0001*005010X279A1~
-BHT*0022*13*TEST123456*20250101*1200~
+    # X12 270 Health Care Eligibility Benefit Inquiry from the current Stedi spec.
+    x12_content = """ISA*00*          *00*          *ZZ*SENDER         *ZZ*RECEIVER       *231106*1406*^*00501*000000001*0*T*>~
+GS*HS*SENDERGS*RECEIVERGS*20231106*140631*000000001*X*005010X279A1~
+ST*270*1234*005010X279A1~
+BHT*0022*13*10001234*20240321*1319~
 HL*1**20*1~
-NM1*PR*2*10379*****PI*10379~
+NM1*PR*2*ABCDE*****PI*11122~
 HL*2*1*21*1~
-NM1*1P*1*UNITEDHEALTHCARE*****XX*87726~
+NM1*1P*2*ACME HEALTH SERVICES*****SV*1999999984~
 HL*3*2*22*0~
-TRN*1*123456789*1234567890~
-NM1*IL*1*DOE*JOHN~
-DMG*D8*19800101~
-DTP*291*D8*20250101~
-SE*12*0001~
-GE*1*1~
+TRN*1*11122-12345*1234567890~
+NM1*IL*1*JANE*DOE****MI*123456789~
+DMG*D8*19000101~
+DTP*291*D8*20240108~
+EQ*MH~
+SE*13*1234~
+GE*1*000000001~
 IEA*1*000000001~"""
     
     payload = {
@@ -363,8 +379,41 @@ def request_7():
         "Authorization": get_api_key(),
         "Content-Type": "application/json"
     }
+    x12_content = """ISA*00*          *00*          *ZZ*574183004559   *ZZ*STEDITEST      *260213*2039*^*00501*000000039*0*T*>~
+GS*HC*574183004559*STEDITEST*20260213*203918*39*X*005010X222A1~
+ST*837*0001*005010X222A1~
+BHT*0019*00*01KHCBK84E40QQYJVXA5VVXG54*20260213*2038*CH~
+NM1*41*2*Test Data Health Services, Inc.*****46*123435~
+PER*IC**TE*5552223333~
+NM1*40*2*Cigna*****46*6400~
+HL*1**20*1~
+PRV*BI*PXC*2084P0800X~
+NM1*85*2*Therapy Associates*****XX*1999999984~
+N3*123 Some St*Floor 1~
+N4*A City*NY*123450000~
+REF*EI*123456789~
+PER*IC*Test Data Health Services, Inc.*TE*5553334444~
+HL*2*1*22*0~
+SBR*P*18*3335555******CI~
+NM1*IL*1*Anon*John****MI*U7777788888~
+N3*2222 Random St~
+N4*A City*NY*123450000~
+DMG*D8*20000101*M~
+NM1*PR*2*Cigna*****PI*6400~
+CLM*123456789*109.2***02>B>1*Y*A*Y*Y~
+HI*ABK>F1111~
+NM1*77*2*Smith Associates~
+N3*1234 Other St~
+N4*A City*NY*123450000~
+LX*1~
+SV1*HC>90837>95*109.2*UN*1***1~
+DTP*472*D8*20240101~
+REF*6R*111222333~
+SE*29*0001~
+GE*1*39~
+IEA*1*000000039~"""
     payload = {
-        "x12": "example"
+        "x12": x12_content
 }
     response = requests.post(url, headers=headers, json=payload)
     return response
@@ -454,13 +503,12 @@ def request_8():
     return response
 
 
-# Request 9: GET /change/medicalnetwork/reports/v2/{eligibilitySearchId}/277
+# Request 9: GET /change/medicalnetwork/reports/v2/{transactionId}/277
 def request_9():
     """"""
-    # Note: This endpoint requires a valid eligibilitySearchId (UUID format) from a previous eligibility check
-    # Using a sample UUID format - replace with actual eligibilitySearchId from Request 3 response
-    eligibility_search_id = "019a7b3c-5b91-7ae1-8213-0bd5ff204a6a"
-    url = f"{BASE_URL}/change/medicalnetwork/reports/v2/{eligibility_search_id}/277"
+    # Replace this with the processed 277 transactionId from Stedi.
+    transaction_id = "d567c2ae-f073-4725-8b8c-06c473b738a6"
+    url = f"{BASE_URL}/change/medicalnetwork/reports/v2/{transaction_id}/277"
     headers = {
         "Authorization": get_api_key(),
         "Content-Type": "application/json"
@@ -469,13 +517,12 @@ def request_9():
     return response
 
 
-# Request 10: GET /change/medicalnetwork/reports/v2/{eligibilitySearchId}/835
+# Request 10: GET /change/medicalnetwork/reports/v2/{transactionId}/835
 def request_10():
     """"""
-    # Note: This endpoint requires a valid eligibilitySearchId (UUID format) from a previous eligibility check
-    # Using a sample UUID format - replace with actual eligibilitySearchId from Request 3 response
-    eligibility_search_id = "019a7b3c-5b91-7ae1-8213-0bd5ff204a6a"
-    url = f"{BASE_URL}/change/medicalnetwork/reports/v2/{eligibility_search_id}/835"
+    # Replace this with the processed 835 transactionId from Stedi.
+    transaction_id = "d567c2ae-f073-4725-8b8c-06c473b738a6"
+    url = f"{BASE_URL}/change/medicalnetwork/reports/v2/{transaction_id}/835"
     headers = {
         "Authorization": get_api_key(),
         "Content-Type": "application/json"
@@ -493,17 +540,26 @@ def request_11():
         "Content-Type": "application/json"
     }
     payload = {
-        "encounter": {},
+        "dependent": {
+                "dateOfBirth": "2002-12-31",
+                "firstName": "Jordan",
+                "lastName": "Doe"
+        },
+        "encounter": {
+                "dateOfService": "2024-08-02",
+                "serviceTypeCode": "30"
+        },
         "provider": {
                 "npi": "1932808896",
-                "organizationName": "UnitedHealthcare"
+                "organizationName": "ACME Health Services"
         },
         "subscriber": {
-                "dateOfBirth": "2024-01-01",
-                "firstName": "EXAMPLE",
-                "lastName": "EXAMPLE"
+                "dateOfBirth": "1985-05-27",
+                "firstName": "John",
+                "lastName": "Doe",
+                "memberId": "W000000000"
         },
-        "tradingPartnerServiceId": "10379"
+        "tradingPartnerServiceId": "SOMEID"
 }
     response = requests.post(url, headers=headers, json=payload)
     return response
@@ -517,8 +573,47 @@ def request_12():
         "Authorization": get_api_key(),
         "Content-Type": "application/json"
     }
+    x12_content = """ISA*00*          *00*          *ZZ*574183004559   *ZZ*STEDITEST      *260213*2050*^*00501*000000042*0*T*>~
+GS*HC*574183004559*STEDITEST*20260213*205048*42*X*005010X224A2~
+ST*837*0001*005010X224A2~
+BHT*0019*00*01KHCCA4V6K00NFPX588G859SJ*20260213*2050*CH~
+NM1*41*2*ABA Inc*****46*1234567~
+PER*IC*BILLING DEPARTMENT*TE*3131234567~
+NM1*40*2*United HealthCare Dental*****46*52133~
+HL*1**20*1~
+PRV*BI*PXC*106S00000X~
+NM1*85*2*ABA Inc*****XX*1999999992~
+N3*ABA Inc 123 Some St~
+N4*Denver*CO*802383000~
+REF*EI*123456789~
+PER*IC*ABA Inc*TE*3134893157~
+HL*2*1*22*0~
+SBR*P*18*1234567890******FI~
+NM1*IL*1*Doe*John****MI*123412345~
+N3*1234 Some St~
+N4*Buckeye*AZ*85326~
+DMG*D8*20180615*F~
+NM1*PR*2*United HealthCare Dental*****PI*52133~
+N3*PO Box 7000~
+N4*Camden*SC*29000~
+CLM*12345*832***12>B>1*Y*A*Y*Y~
+DN2*3*E****JP~
+REF*G1*20231010012345678~
+HI*ABK>K081~
+NM1*82*1*Doe*Jane****XX*1999999992~
+PRV*PE*PXC*106S00000X~
+LX*1~
+SV3*AD>D7140*832**1>2*I*2*****1~
+TOO*JP*3*M>O~
+DTP*472*D8*20230428~
+REF*6R*a0UDo000000dd2dMAA~
+NM1*82*1*Doe*Jane****XX*1999999992~
+PRV*PE*PXC*122300000X~
+SE*35*0001~
+GE*1*42~
+IEA*1*000000042~"""
     payload = {
-        "x12": "example"
+        "x12": x12_content
 }
     response = requests.post(url, headers=headers, json=payload)
     return response
@@ -583,10 +678,12 @@ def request_14():
     return response
 
 
-# Request 15: GET /export/123456789/1500/pdf
+# Request 15: GET /export/{transactionId}/1500/pdf
 def request_15():
     """"""
-    url = f"{BASE_URL}/export/123456789/1500/pdf"
+    # Replace this with the processed professional claim transactionId from Stedi.
+    transaction_id = "a10b1111-7233-484c-8dee-b240c590c767"
+    url = f"{BASE_URL}/export/{transaction_id}/1500/pdf"
     headers = {
         "Authorization": get_api_key(),
         "Content-Type": "application/json"
@@ -604,23 +701,37 @@ def request_16():
         "Content-Type": "application/json"
     }
     payload = {
+        "encounter": {
+                "beginningDateOfService": "20240326",
+                "endDateOfService": "20240326"
+        },
         "provider": {
-                "npi": "87726",
-                "organizationName": "UnitedHealthcare"
+                "npi": "1999999984"
         },
         "subscriber": {
-                "firstName": "EXAMPLE",
-                "lastName": "EXAMPLE"
+                "address": {
+                        "address1": "123 Main St",
+                        "city": "Springfield",
+                        "postalCode": "62701",
+                        "state": "IL"
+                },
+                "dateOfBirth": "19800101",
+                "firstName": "John",
+                "gender": "M",
+                "lastName": "Smith",
+                "middleName": "Robert",
+                "ssn": "123456789"
         }
 }
     response = requests.post(url, headers=headers, json=payload)
     return response
 
 
-# Request 17: GET /insurance-discovery/check/v1/123456789
+# Request 17: GET /insurance-discovery/check/v1/{discoveryId}
 def request_17():
     """"""
-    url = f"{BASE_URL}/insurance-discovery/check/v1/123456789"
+    discovery_id = "12345678-abcd-4321-efgh-987654321abc"
+    url = f"{BASE_URL}/insurance-discovery/check/v1/{discovery_id}"
     headers = {
         "Authorization": get_api_key(),
         "Content-Type": "application/json"
@@ -629,10 +740,11 @@ def request_17():
     return response
 
 
-# Request 18: GET /payer/123456789
+# Request 18: GET /payer/{stediId}
 def request_18():
     """"""
-    url = f"{BASE_URL}/payer/123456789"
+    stedi_id = "QDTRP"
+    url = f"{BASE_URL}/payer/{stedi_id}"
     headers = {
         "Authorization": get_api_key(),
         "Content-Type": "application/json"
@@ -674,6 +786,23 @@ def request_21():
         "Content-Type": "application/json"
     }
     response = requests.get(url, headers=headers)
+    return response
+
+
+# Request 22: GET /electronic-remittance-advice/{transactionId}/pdf
+def request_22():
+    """"""
+    # Replace this with the processed 835 ERA transactionId from Stedi.
+    transaction_id = "b12a1241-3312-a3dc-aed2-1a30ca50cd63"
+    url = f"{BASE_URL}/electronic-remittance-advice/{transaction_id}/pdf"
+    headers = {
+        "Authorization": get_api_key(),
+        "Content-Type": "application/json"
+    }
+    params = {
+        "logo": True
+}
+    response = requests.get(url, headers=headers, params=params)
     return response
 
 
@@ -852,4 +981,3 @@ Examples:
 
 if __name__ == "__main__":
     main()
-

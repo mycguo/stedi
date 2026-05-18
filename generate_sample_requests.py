@@ -1,17 +1,34 @@
 #!/usr/bin/env python3
 """
-Script to generate sample requests from Stedi Healthcare OpenAPI specification.
+Script to generate sample requests from Stedi Healthcare OpenAPI specifications.
 """
 
+import argparse
 import json
-import requests
 from typing import Dict, Any, List, Optional
+from urllib.request import urlopen
 from urllib.parse import urljoin
+
+API_REFERENCE_URL = "https://www.stedi.com/docs/healthcare/api-reference"
+
+OPENAPI_SPECS = {
+    "healthcare": "https://raw.githubusercontent.com/Stedi/openApi/main/healthcare.json",
+    "claim-attachments": "https://raw.githubusercontent.com/Stedi/openApi/main/claims.json",
+    "batch-eligibility": "https://raw.githubusercontent.com/Stedi/openApi/main/manager.json",
+    "transaction-enrollment": "https://raw.githubusercontent.com/Stedi/openApi/main/enrollment.json",
+    "payers": "https://raw.githubusercontent.com/Stedi/openApi/main/payers.json",
+    "event-destinations": "https://raw.githubusercontent.com/Stedi/openApi/main/event-destinations.json",
+}
 
 
 class SampleRequestGenerator:
-    def __init__(self, openapi_url: str = "https://raw.githubusercontent.com/Stedi/openApi/main/healthcare.json"):
+    def __init__(
+        self,
+        openapi_url: str = OPENAPI_SPECS["healthcare"],
+        spec_name: str = "healthcare",
+    ):
         self.openapi_url = openapi_url
+        self.spec_name = spec_name
         self.spec: Dict[str, Any] = {}
         self.base_url = ""
         self.schemas: Dict[str, Any] = {}
@@ -19,9 +36,8 @@ class SampleRequestGenerator:
     def load_spec(self) -> None:
         """Load the OpenAPI specification from the URL."""
         print(f"Loading OpenAPI spec from {self.openapi_url}...")
-        response = requests.get(self.openapi_url)
-        response.raise_for_status()
-        self.spec = response.json()
+        with urlopen(self.openapi_url, timeout=30) as response:
+            self.spec = json.load(response)
         
         # Extract base URL
         if "servers" in self.spec and len(self.spec["servers"]) > 0:
@@ -32,9 +48,26 @@ class SampleRequestGenerator:
             self.schemas = self.spec["components"]["schemas"]
         
         print(f"Loaded spec with {len(self.spec.get('paths', {}))} paths")
+
+    def get_example_value(self, source: Dict[str, Any]) -> Optional[Any]:
+        """Return an OpenAPI example value from an object, if one is available."""
+        if "example" in source:
+            return source["example"]
+
+        examples = source.get("examples")
+        if isinstance(examples, dict):
+            for example in examples.values():
+                if isinstance(example, dict) and "value" in example:
+                    return example["value"]
+
+        return None
     
     def generate_sample_value(self, schema: Dict[str, Any], prop_name: str = "") -> Any:
         """Generate a sample value based on schema definition."""
+        example_value = self.get_example_value(schema)
+        if example_value is not None:
+            return example_value
+
         if "type" not in schema:
             # Check for $ref
             if "$ref" in schema:
@@ -115,9 +148,14 @@ class SampleRequestGenerator:
         
         # Look for application/json content
         if "application/json" in content:
-            schema = content["application/json"].get("schema", {})
+            media_type = content["application/json"]
+            example_value = self.get_example_value(media_type)
+            if example_value is not None:
+                return example_value
+
+            schema = media_type.get("schema", {})
             return self.generate_sample_value(schema)
-        
+
         return None
     
     def generate_path_params(self, path: str, parameters: List[Dict[str, Any]]) -> Dict[str, str]:
@@ -127,7 +165,10 @@ class SampleRequestGenerator:
             if param.get("in") == "path":
                 param_name = param["name"]
                 param_schema = param.get("schema", {})
-                params[param_name] = self.generate_sample_value(param_schema, param_name)
+                params[param_name] = (
+                    self.get_example_value(param)
+                    or self.generate_sample_value(param_schema, param_name)
+                )
         return params
     
     def generate_query_params(self, parameters: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -139,7 +180,10 @@ class SampleRequestGenerator:
                 param_schema = param.get("schema", {})
                 required = param.get("required", False)
                 if required:
-                    params[param_name] = self.generate_sample_value(param_schema, param_name)
+                    params[param_name] = (
+                        self.get_example_value(param)
+                        or self.generate_sample_value(param_schema, param_name)
+                    )
         return params
     
     def format_path(self, path_template: str, path_params: Dict[str, str]) -> str:
@@ -152,10 +196,12 @@ class SampleRequestGenerator:
     def generate_sample_request(self, path: str, method: str, operation: Dict[str, Any]) -> Dict[str, Any]:
         """Generate a sample request for a given path and method."""
         request_info = {
+            "spec": self.spec_name,
             "method": method.upper(),
             "path": path,
             "summary": operation.get("summary", ""),
             "description": operation.get("description", ""),
+            "base_url": self.base_url,
             "url": "",
             "headers": {},
             "query_params": {},
@@ -177,7 +223,10 @@ class SampleRequestGenerator:
         
         # Build URL
         if self.base_url:
-            request_info["url"] = urljoin(self.base_url, formatted_path.lstrip("/"))
+            request_info["url"] = urljoin(
+                self.base_url.rstrip("/") + "/",
+                formatted_path.lstrip("/"),
+            )
         
         # Generate request body
         request_body = operation.get("requestBody")
@@ -276,7 +325,7 @@ class SampleRequestGenerator:
             f.write('import requests\n')
             f.write('import json\n\n')
             f.write('API_KEY = "YOUR_API_KEY_HERE"\n')
-            f.write('BASE_URL = "https://healthcare.us.stedi.com/2024-04-01"\n\n')
+            f.write(f'API_REFERENCE_URL = "{API_REFERENCE_URL}"\n\n')
             
             for i, req in enumerate(requests_list):
                 f.write(f'\n# Request {i+1}: {req["method"]} {req["path"]}\n')
@@ -285,7 +334,7 @@ class SampleRequestGenerator:
                 
                 f.write(f'def request_{i+1}():\n')
                 f.write(f'    """{req.get("summary", "Sample request")}"""\n')
-                f.write(f'    url = f"{{BASE_URL}}{req["path"]}"\n')
+                f.write(f'    url = "{req["url"]}"\n')
                 f.write(f'    headers = {{\n')
                 f.write(f'        "Authorization": API_KEY,\n')
                 f.write(f'        "Content-Type": "application/json"\n')
@@ -308,16 +357,68 @@ class SampleRequestGenerator:
 
 
 def main():
-    generator = SampleRequestGenerator()
-    
+    parser = argparse.ArgumentParser(
+        description="Generate sample requests from the current Stedi Healthcare API reference."
+    )
+    parser.add_argument(
+        "--spec",
+        choices=[*OPENAPI_SPECS.keys(), "all"],
+        default="healthcare",
+        help="OpenAPI spec to load from the Stedi API reference. Default: healthcare.",
+    )
+    parser.add_argument(
+        "--openapi-url",
+        help="Override the OpenAPI URL. Cannot be used with --spec all.",
+    )
+    parser.add_argument(
+        "--output-json",
+        default="sample_requests.json",
+        help="JSON output file. Default: sample_requests.json.",
+    )
+    parser.add_argument(
+        "--output-python",
+        default="sample_requests.py",
+        help="Generated Python output file. Default: sample_requests.py.",
+    )
+    parser.add_argument(
+        "--skip-python",
+        action="store_true",
+        help="Only write the JSON output file.",
+    )
+    parser.add_argument(
+        "--list-specs",
+        action="store_true",
+        help="List known Stedi OpenAPI specs from the API reference and exit.",
+    )
+    args = parser.parse_args()
+
+    if args.list_specs:
+        print(f"API reference: {API_REFERENCE_URL}")
+        for name, url in OPENAPI_SPECS.items():
+            print(f"{name}: {url}")
+        return
+
+    if args.openapi_url and args.spec == "all":
+        parser.error("--openapi-url cannot be used with --spec all")
+
+    selected_specs = (
+        OPENAPI_SPECS.items()
+        if args.spec == "all"
+        else [(args.spec, args.openapi_url or OPENAPI_SPECS[args.spec])]
+    )
+    requests_list: List[Dict[str, Any]] = []
+
     try:
-        # Load the OpenAPI spec
-        generator.load_spec()
-        
-        # Generate all sample requests
-        print("\nGenerating sample requests...")
-        requests_list = generator.generate_all_requests()
-        
+        for spec_name, spec_url in selected_specs:
+            generator = SampleRequestGenerator(spec_url, spec_name=spec_name)
+
+            # Load the OpenAPI spec
+            generator.load_spec()
+
+            # Generate all sample requests
+            print(f"\nGenerating sample requests for {spec_name}...")
+            requests_list.extend(generator.generate_all_requests())
+
         print(f"\nGenerated {len(requests_list)} sample requests")
         
         # Print first few requests as examples
@@ -332,8 +433,9 @@ def main():
             print(f"\n... and {len(requests_list) - 3} more requests")
         
         # Save to files
-        generator.save_to_file(requests_list, "sample_requests.json")
-        generator.generate_python_script(requests_list, "sample_requests.py")
+        generator.save_to_file(requests_list, args.output_json)
+        if not args.skip_python:
+            generator.generate_python_script(requests_list, args.output_python)
         
         print("\nDone!")
         
@@ -345,4 +447,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

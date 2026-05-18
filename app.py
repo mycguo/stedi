@@ -27,6 +27,32 @@ REQUESTS = stedi_request.REQUESTS
 BASE_URL = stedi_request.BASE_URL
 get_api_key = stedi_request.get_api_key
 
+DOCS_BASE_URL = "https://www.stedi.com"
+REQUEST_DOC_PATHS = {
+    1: "/docs/healthcare/api-reference/post-healthcare-claim-status",
+    2: "/docs/healthcare/api-reference/post-healthcare-claim-status-raw-x12",
+    3: "/docs/healthcare/api-reference/post-healthcare-eligibility",
+    4: "/docs/healthcare/api-reference/post-healthcare-eligibility-raw-x12",
+    5: "/docs/healthcare/api-reference/post-healthcare-institutional-claims-raw-x12",
+    6: "/docs/healthcare/api-reference/post-healthcare-institutional-claims",
+    7: "/docs/healthcare/api-reference/post-healthcare-claims-raw-x12",
+    8: "/docs/healthcare/api-reference/post-healthcare-claims",
+    9: "/docs/healthcare/api-reference/get-healthcare-reports-277",
+    10: "/docs/healthcare/api-reference/get-healthcare-reports-835",
+    11: "/docs/healthcare/api-reference/post-coordination-of-benefits",
+    12: "/docs/healthcare/api-reference/post-healthcare-dental-claims-raw-x12",
+    13: "/docs/healthcare/api-reference/post-healthcare-dental-claims",
+    14: "/docs/healthcare/api-reference/get-pdf-1500-business-identifier",
+    15: "/docs/healthcare/api-reference/get-pdf-1500",
+    16: "/docs/healthcare/api-reference/post-insurance-discovery",
+    17: "/docs/healthcare/api-reference/get-insurance-discovery-results",
+    18: "/docs/healthcare/api-reference/get-payer",
+    19: "/docs/healthcare/api-reference/get-payers",
+    20: "/docs/healthcare/api-reference/get-payers-csv",
+    21: "/docs/healthcare/api-reference/get-search-payers",
+    22: "/docs/healthcare/api-reference/get-era-pdf",
+}
+
 # Initialize request functions
 for req_id in REQUESTS:
     func_name = f"request_{req_id}"
@@ -122,7 +148,28 @@ def execute_request_with_payload(req_id, payload, headers, url, method):
 
 def get_display_url(req_id):
     """Return the concrete sample URL shown and used by the UI."""
-    return stedi_request.get_request_url(req_id, resolve_examples=True)
+    if hasattr(stedi_request, "get_request_url"):
+        return stedi_request.get_request_url(req_id, resolve_examples=True)
+
+    req_info = REQUESTS[req_id]
+    path = req_info["path"]
+    for name, value in req_info.get("path_params", {}).items():
+        path = path.replace(f"{{{name}}}", value)
+    return f"{req_info.get('base_url', BASE_URL)}{path}"
+
+def get_template_url(req_id):
+    """Return the URL template for a request without example path parameters."""
+    if hasattr(stedi_request, "get_request_url"):
+        return stedi_request.get_request_url(req_id)
+
+    req_info = REQUESTS[req_id]
+    return f"{req_info.get('base_url', BASE_URL)}{req_info['path']}"
+
+def get_docs_url(req_id):
+    """Return the Stedi docs URL without depending on stedi_request helper versions."""
+    if hasattr(stedi_request, "get_request_docs_url"):
+        return stedi_request.get_request_docs_url(req_id)
+    return f"{DOCS_BASE_URL}{REQUEST_DOC_PATHS[req_id]}"
 
 # Page configuration
 st.set_page_config(
@@ -197,10 +244,10 @@ if run_mode == "Single Request":
             st.write(f"**Path:** {req_info['path']}")
         with col2:
             st.write(f"**ID:** {selected_id}")
-            st.write(f"**Docs URL:** {stedi_request.get_request_docs_url(selected_id)}")
+            st.write(f"**Docs URL:** {get_docs_url(selected_id)}")
             st.write(f"**API Request URL:** {get_display_url(selected_id)}")
             if req_info.get("path_params"):
-                st.write(f"**Template URL:** {stedi_request.get_request_url(selected_id)}")
+                st.write(f"**Template URL:** {get_template_url(selected_id)}")
         
         if req_info.get('description'):
             st.write(f"**Description:** {req_info['description']}")

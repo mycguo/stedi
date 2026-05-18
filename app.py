@@ -106,6 +106,10 @@ def execute_request_with_payload(req_id, payload, headers, url, method):
     else:
         raise ValueError(f"Unsupported method: {method}")
 
+def get_display_url(req_id):
+    """Return the concrete sample URL shown and used by the UI."""
+    return stedi_request.get_request_url(req_id, resolve_examples=True)
+
 # Page configuration
 st.set_page_config(
     page_title="Stedi Healthcare API Request Runner",
@@ -127,8 +131,8 @@ st.markdown("---")
 with st.sidebar:
     st.header("⚙️ Configuration")
     
-    # Base URL
-    st.text_input("Base URL", value=BASE_URL, disabled=True)
+    # Default base URL
+    st.text_input("Default Healthcare Base URL", value=BASE_URL, disabled=True)
     
     st.markdown("---")
     
@@ -179,7 +183,9 @@ if run_mode == "Single Request":
             st.write(f"**Path:** {req_info['path']}")
         with col2:
             st.write(f"**ID:** {selected_id}")
-            st.write(f"**Full URL:** {BASE_URL}{req_info['path']}")
+            st.write(f"**Request URL:** {get_display_url(selected_id)}")
+            if req_info.get("path_params"):
+                st.write(f"**Template URL:** {stedi_request.get_request_url(selected_id)}")
         
         if req_info.get('description'):
             st.write(f"**Description:** {req_info['description']}")
@@ -242,7 +248,7 @@ if run_mode == "Single Request":
                 else:
                     # Get URL and headers from function
                     source = inspect.getsource(func)
-                    url = BASE_URL + req_info['path']
+                    url = get_display_url(selected_id)
                     headers = {
                         "Authorization": get_api_key(),
                         "Content-Type": "application/json"
@@ -516,7 +522,7 @@ st.markdown("---")
 st.markdown(
     "<div style='text-align: center; color: gray;'>"
     "Stedi Healthcare API Request Runner | "
-    f"Base URL: {BASE_URL}"
+    f"Default Healthcare Base URL: {BASE_URL}"
     "</div>",
     unsafe_allow_html=True
 )

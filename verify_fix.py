@@ -77,6 +77,18 @@ def assert_migrated_examples() -> None:
     assert "/electronic-remittance-advice/" in args[0]
     assert kwargs["params"] == {"logo": True}
 
+    assert (
+        stedi_request.get_request_url(3, resolve_examples=True)
+        == "https://healthcare.us.stedi.com/2024-04-01/change/medicalnetwork/eligibility/v3"
+    )
+    assert (
+        stedi_request.get_request_url(19, resolve_examples=True)
+        == "https://payers.us.stedi.com/2024-04-01/payers"
+    )
+    stedi_request.request_19()
+    args, _ = requests.get.call_args
+    assert args[0] == "https://payers.us.stedi.com/2024-04-01/payers"
+
 
 def main() -> None:
     assert_request_registry()

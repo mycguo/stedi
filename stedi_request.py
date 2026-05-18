@@ -13,7 +13,9 @@ from typing import Dict, Callable, Any, Optional
 
 API_REFERENCE_URL = "https://www.stedi.com/docs/healthcare/api-reference"
 HEALTHCARE_OPENAPI_URL = "https://raw.githubusercontent.com/Stedi/openApi/main/healthcare.json"
-BASE_URL = "https://healthcare.us.stedi.com/2024-04-01"
+HEALTHCARE_BASE_URL = "https://healthcare.us.stedi.com/2024-04-01"
+PAYERS_BASE_URL = "https://payers.us.stedi.com/2024-04-01"
+BASE_URL = HEALTHCARE_BASE_URL
 
 # Global variable to store API key (set by Streamlit or CLI)
 _api_key: Optional[str] = None
@@ -64,21 +66,33 @@ REQUESTS: Dict[int, Dict[str, Any]] = {
     6: {"func": None, "method": "POST", "path": "/change/medicalnetwork/institutionalclaims/v1/submission", "description": "Submit an 837I institutional claim in JSON format"},
     7: {"func": None, "method": "POST", "path": "/change/medicalnetwork/professionalclaims/v3/raw-x12-submission", "description": "Submit an 837P professional claim in raw X12 EDI format"},
     8: {"func": None, "method": "POST", "path": "/change/medicalnetwork/professionalclaims/v3/submission", "description": "Submit an 837P professional claim in JSON format"},
-    9: {"func": None, "method": "GET", "path": "/change/medicalnetwork/reports/v2/{transactionId}/277", "description": "Get 277 claim acknowledgment report"},
-    10: {"func": None, "method": "GET", "path": "/change/medicalnetwork/reports/v2/{transactionId}/835", "description": "Get 835 ERA report"},
+    9: {"func": None, "method": "GET", "path": "/change/medicalnetwork/reports/v2/{transactionId}/277", "path_params": {"transactionId": "d567c2ae-f073-4725-8b8c-06c473b738a6"}, "description": "Get 277 claim acknowledgment report"},
+    10: {"func": None, "method": "GET", "path": "/change/medicalnetwork/reports/v2/{transactionId}/835", "path_params": {"transactionId": "d567c2ae-f073-4725-8b8c-06c473b738a6"}, "description": "Get 835 ERA report"},
     11: {"func": None, "method": "POST", "path": "/coordination-of-benefits", "description": "Submit coordination of benefits check"},
     12: {"func": None, "method": "POST", "path": "/dental-claims/raw-x12-submission", "description": "Submit dental claim in raw X12 EDI format"},
     13: {"func": None, "method": "POST", "path": "/dental-claims/submission", "description": "Submit dental claim in JSON format"},
     14: {"func": None, "method": "GET", "path": "/export/pdf", "description": "Export PDF"},
-    15: {"func": None, "method": "GET", "path": "/export/{transactionId}/1500/pdf", "description": "Export 1500 form PDF"},
+    15: {"func": None, "method": "GET", "path": "/export/{transactionId}/1500/pdf", "path_params": {"transactionId": "a10b1111-7233-484c-8dee-b240c590c767"}, "description": "Export 1500 form PDF"},
     16: {"func": None, "method": "POST", "path": "/insurance-discovery/check/v1", "description": "Submit insurance discovery check"},
-    17: {"func": None, "method": "GET", "path": "/insurance-discovery/check/v1/{discoveryId}", "description": "Get insurance discovery check result"},
-    18: {"func": None, "method": "GET", "path": "/payer/{stediId}", "description": "Get payer information"},
-    19: {"func": None, "method": "GET", "path": "/payers", "description": "List all payers"},
-    20: {"func": None, "method": "GET", "path": "/payers/csv", "description": "Export payers as CSV"},
-    21: {"func": None, "method": "GET", "path": "/payers/search", "description": "Search payers"},
-    22: {"func": None, "method": "GET", "path": "/electronic-remittance-advice/{transactionId}/pdf", "description": "Get 835 ERA PDF"},
+    17: {"func": None, "method": "GET", "path": "/insurance-discovery/check/v1/{discoveryId}", "path_params": {"discoveryId": "12345678-abcd-4321-efgh-987654321abc"}, "description": "Get insurance discovery check result"},
+    18: {"func": None, "method": "GET", "base_url": PAYERS_BASE_URL, "path": "/payer/{stediId}", "path_params": {"stediId": "QDTRP"}, "description": "Get payer information"},
+    19: {"func": None, "method": "GET", "base_url": PAYERS_BASE_URL, "path": "/payers", "description": "List all payers"},
+    20: {"func": None, "method": "GET", "base_url": PAYERS_BASE_URL, "path": "/payers/csv", "description": "Export payers as CSV"},
+    21: {"func": None, "method": "GET", "base_url": PAYERS_BASE_URL, "path": "/payers/search", "description": "Search payers"},
+    22: {"func": None, "method": "GET", "path": "/electronic-remittance-advice/{transactionId}/pdf", "path_params": {"transactionId": "b12a1241-3312-a3dc-aed2-1a30ca50cd63"}, "description": "Get 835 ERA PDF"},
 }
+
+
+def get_request_url(request_id: int, resolve_examples: bool = False) -> str:
+    """Return the canonical URL for a registered request."""
+    req_info = REQUESTS[request_id]
+    path = req_info["path"]
+
+    if resolve_examples:
+        for name, value in req_info.get("path_params", {}).items():
+            path = path.replace(f"{{{name}}}", value)
+
+    return f"{req_info.get('base_url', BASE_URL)}{path}"
 
 
 # Request 1: POST /change/medicalnetwork/claimstatus/v2
@@ -744,7 +758,7 @@ def request_17():
 def request_18():
     """"""
     stedi_id = "QDTRP"
-    url = f"{BASE_URL}/payer/{stedi_id}"
+    url = f"{PAYERS_BASE_URL}/payer/{stedi_id}"
     headers = {
         "Authorization": get_api_key(),
         "Content-Type": "application/json"
@@ -756,7 +770,7 @@ def request_18():
 # Request 19: GET /payers
 def request_19():
     """"""
-    url = f"{BASE_URL}/payers"
+    url = f"{PAYERS_BASE_URL}/payers"
     headers = {
         "Authorization": get_api_key(),
         "Content-Type": "application/json"
@@ -768,7 +782,7 @@ def request_19():
 # Request 20: GET /payers/csv
 def request_20():
     """"""
-    url = f"{BASE_URL}/payers/csv"
+    url = f"{PAYERS_BASE_URL}/payers/csv"
     headers = {
         "Authorization": get_api_key(),
         "Content-Type": "application/json"
@@ -780,7 +794,7 @@ def request_20():
 # Request 21: GET /payers/search
 def request_21():
     """"""
-    url = f"{BASE_URL}/payers/search"
+    url = f"{PAYERS_BASE_URL}/payers/search"
     headers = {
         "Authorization": get_api_key(),
         "Content-Type": "application/json"
@@ -851,7 +865,9 @@ def get_request_info(request_id: int) -> None:
     print("="*80)
     if req_info.get('description'):
         print(f"Description: {req_info['description']}")
-    print(f"Full URL: {BASE_URL}{req_info['path']}")
+    print(f"Request URL: {get_request_url(request_id, resolve_examples=True)}")
+    if req_info.get("path_params"):
+        print(f"Template URL: {get_request_url(request_id)}")
     
     if func:
         # Try to get payload info by calling the function (but don't actually make request)
@@ -885,7 +901,7 @@ def run_request(request_id: int, verbose: bool = False, dry_run: bool = False) -
     if dry_run:
         print("\n[DRY RUN] Would execute:")
         print(f"  Function: {func.__name__}")
-        print(f"  URL: {BASE_URL}{req_info['path']}")
+        print(f"  URL: {get_request_url(request_id, resolve_examples=True)}")
         return
     
     try:

@@ -10,8 +10,22 @@ import time
 import inspect
 import ast
 import re
-from stedi_request import REQUESTS, BASE_URL, get_api_key
-import stedi_request
+
+try:
+    import stedi_request
+except Exception as import_error:
+    st.set_page_config(
+        page_title="Stedi Healthcare API Request Runner",
+        page_icon="🏥",
+        layout="wide"
+    )
+    st.error("Failed to load Stedi request definitions.")
+    st.exception(import_error)
+    st.stop()
+
+REQUESTS = stedi_request.REQUESTS
+BASE_URL = stedi_request.BASE_URL
+get_api_key = stedi_request.get_api_key
 
 # Initialize request functions
 for req_id in REQUESTS:
@@ -183,7 +197,8 @@ if run_mode == "Single Request":
             st.write(f"**Path:** {req_info['path']}")
         with col2:
             st.write(f"**ID:** {selected_id}")
-            st.write(f"**Request URL:** {get_display_url(selected_id)}")
+            st.write(f"**Docs URL:** {stedi_request.get_request_docs_url(selected_id)}")
+            st.write(f"**API Request URL:** {get_display_url(selected_id)}")
             if req_info.get("path_params"):
                 st.write(f"**Template URL:** {stedi_request.get_request_url(selected_id)}")
         

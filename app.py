@@ -302,9 +302,10 @@ if run_mode == "Single Request":
                     
                     start_time = time.time()
                     
-                    # Execute request with payload
-                    if req_info['method'] == 'GET':
-                        response = requests.get(url, headers=headers)
+                    # Execute request with payload. If the payload extractor cannot
+                    # evaluate a generated payload, use the curated function.
+                    if req_info['method'] == 'GET' or payload is None:
+                        response = func()
                     elif req_info['method'] == 'POST':
                         response = requests.post(url, headers=headers, json=payload)
                     elif req_info['method'] == 'PUT':
@@ -370,7 +371,7 @@ if run_mode == "Single Request":
 
 else:  # All Requests mode
     st.header("Run All Requests")
-    st.warning("⚠️ This will execute all 21 requests sequentially. This may take a while.")
+    st.warning(f"⚠️ This will execute all {len(REQUESTS)} requests sequentially. This may take a while.")
     
     col1, col2, col3 = st.columns([1, 1, 4])
     with col1:
@@ -519,4 +520,3 @@ st.markdown(
     "</div>",
     unsafe_allow_html=True
 )
-

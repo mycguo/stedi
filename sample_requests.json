@@ -1,10 +1,12 @@
 [
   {
+    "spec": "healthcare",
     "method": "POST",
     "path": "/change/medicalnetwork/claimstatus/v2",
     "summary": "",
     "description": "Submit a 276/277 real-time claim status check in JSON format",
-    "url": "https://healthcare.us.stedi.com/change/medicalnetwork/claimstatus/v2",
+    "base_url": "https://healthcare.us.stedi.com/2024-04-01",
+    "url": "https://healthcare.us.stedi.com/2024-04-01/change/medicalnetwork/claimstatus/v2",
     "headers": {
       "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
@@ -12,25 +14,34 @@
     "query_params": {},
     "path_params": {},
     "body": {
+      "encounter": {
+        "beginningDateOfService": "20250630",
+        "endDateOfService": "20250702"
+      },
       "providers": [
         {
+          "npi": "1999999984",
+          "organizationName": "Provider Name",
           "providerType": "BillingProvider"
         }
       ],
       "subscriber": {
-        "firstName": "EXAMPLE",
-        "lastName": "EXAMPLE",
-        "memberId": "123456789"
+        "dateOfBirth": "19710101",
+        "firstName": "Jane",
+        "lastName": "Doe",
+        "memberId": "UHC123456"
       },
-      "tradingPartnerServiceId": "123456789"
+      "tradingPartnerServiceId": "87726"
     }
   },
   {
+    "spec": "healthcare",
     "method": "POST",
     "path": "/change/medicalnetwork/claimstatus/v2/raw-x12",
     "summary": "",
     "description": "Submit a 276/277 real-time claim status check in raw X12 EDI format",
-    "url": "https://healthcare.us.stedi.com/change/medicalnetwork/claimstatus/v2/raw-x12",
+    "base_url": "https://healthcare.us.stedi.com/2024-04-01",
+    "url": "https://healthcare.us.stedi.com/2024-04-01/change/medicalnetwork/claimstatus/v2/raw-x12",
     "headers": {
       "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
@@ -38,15 +49,17 @@
     "query_params": {},
     "path_params": {},
     "body": {
-      "x12": "example"
+      "x12": "ISA*00*          *00*          *ZZ*SENDER         *ZZ*RECEIVER       *250916*2048*^*00501*000000001*0*T*>~GS*HR*SENDERGS*RECEIVERGS*20250916*204811*1*X*005010X212~ST*276*0001*005010X212~BHT*0010*13*ABC276XXX*20250915*1425~HL*1**20*1~NM1*PR*2*UNITEDHEALTHCARE*****PI*87726~HL*2*1*21*1~NM1*41*2*PROVIDER NAME*****46*123456789~HL*3*2*19*1~NM1*1P*2*PROVIDER NAME*****XX*1999999984~HL*4*3*22*0~DMG*D8*19710101~NM1*IL*1*DOE*JANE****MI*UHC123456~TRN*1*123456789~DTP*472*RD8*20250630-20250702~SE*14*0001~GE*1*1~IEA*1*000000001~"
     }
   },
   {
+    "spec": "healthcare",
     "method": "POST",
     "path": "/change/medicalnetwork/eligibility/v3",
     "summary": "",
     "description": "Submit a real-time 270/271 eligibility check in JSON format",
-    "url": "https://healthcare.us.stedi.com/change/medicalnetwork/eligibility/v3",
+    "base_url": "https://healthcare.us.stedi.com/2024-04-01",
+    "url": "https://healthcare.us.stedi.com/2024-04-01/change/medicalnetwork/eligibility/v3",
     "headers": {
       "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
@@ -54,17 +67,33 @@
     "query_params": {},
     "path_params": {},
     "body": {
-      "provider": {},
-      "subscriber": {},
-      "tradingPartnerServiceId": "123456789"
+      "encounter": {
+        "serviceTypeCodes": [
+          "MH"
+        ]
+      },
+      "externalPatientId": "UAA111222333",
+      "provider": {
+        "npi": "1999999984",
+        "organizationName": "ACME Health Services"
+      },
+      "subscriber": {
+        "dateOfBirth": "19000101",
+        "firstName": "Jane",
+        "lastName": "Doe",
+        "memberId": "123456789"
+      },
+      "tradingPartnerServiceId": "AHS"
     }
   },
   {
+    "spec": "healthcare",
     "method": "POST",
     "path": "/change/medicalnetwork/eligibility/v3/raw-x12",
     "summary": "",
     "description": "Submit a real-time 270/271 eligibility check in raw X12 EDI format",
-    "url": "https://healthcare.us.stedi.com/change/medicalnetwork/eligibility/v3/raw-x12",
+    "base_url": "https://healthcare.us.stedi.com/2024-04-01",
+    "url": "https://healthcare.us.stedi.com/2024-04-01/change/medicalnetwork/eligibility/v3/raw-x12",
     "headers": {
       "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
@@ -72,15 +101,17 @@
     "query_params": {},
     "path_params": {},
     "body": {
-      "x12": "example"
+      "x12": "ISA*00*          *00*          *ZZ*SENDER         *ZZ*RECEIVER       *231106*1406*^*00501*000000001*0*T*>~GS*HS*SENDERGS*RECEIVERGS*20231106*140631*000000001*X*005010X279A1~ST*270*1234*005010X279A1~BHT*0022*13*10001234*20240321*1319~HL*1**20*1~NM1*PR*2*ABCDE*****PI*11122~HL*2*1*21*1~NM1*1P*2*ACME HEALTH SERVICES*****SV*1999999984~HL*3*2*22*0~TRN*1*11122-12345*1234567890~NM1*IL*1*JANE*DOE****MI*123456789~DMG*D8*19000101~DTP*291*D8*20240108~EQ*MH~SE*13*1234~GE*1*000000001~IEA*1*000000001~"
     }
   },
   {
+    "spec": "healthcare",
     "method": "POST",
     "path": "/change/medicalnetwork/institutionalclaims/v1/raw-x12-submission",
     "summary": "",
     "description": "Submit an 837I institutional claim in raw X12 EDI format",
-    "url": "https://healthcare.us.stedi.com/change/medicalnetwork/institutionalclaims/v1/raw-x12-submission",
+    "base_url": "https://healthcare.us.stedi.com/2024-04-01",
+    "url": "https://healthcare.us.stedi.com/2024-04-01/change/medicalnetwork/institutionalclaims/v1/raw-x12-submission",
     "headers": {
       "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
@@ -88,14 +119,16 @@
     "query_params": {},
     "path_params": {},
     "body": {
-      "x12": "example"
+      "x12": "ISA*00*          *00*          *ZZ*574183004559   *ZZ*STEDITEST      *260213*2004*^*00501*000000035*0*T*>~GS*HC*574183004559*STEDITEST*20260213*200422*35*X*005010X223A2~ST*837*0001*005010X223A2~BHT*0019*00*01KHC9KCMYMA7YSW4K1ZM774ZA*20260213*2003*CH~NM1*41*2*Test Facility*****46*123456789~PER*IC**TE*2225551234~NM1*40*2*UnitedHealthcare*****46*87726~HL*1**20*1~NM1*85*2*Test Facility*****XX*1999999976~N3*123 Mulberry Street~N4*Seattle*WA*111135272~REF*EI*123456789~HL*2*1*22*0~SBR*P*18*******ZZ~NM1*IL*1*DOE*JANE****MI*98765~N3*1234 Some St~N4*Buckeye*AZ*85326~DMG*D8*19000101*F~NM1*PR*2*UnitedHealthcare*****PI*87726~CLM*55556666777888*500***11>A>0**C*Y*Y~DTP*434*RD8*20241015-20241015~DTP*435*DT*202409091000~CL1*3*9*30~HI*ABK>R45851~NM1*71*1*Provider*Doctor****XX*1999999976~LX*1~SV2*0800*HC>H0001*500*UN*1~DTP*472*RD8*20241015-20241015~REF*6R*111222333~SE*28*0001~GE*1*35~IEA*1*000000035~"
     }
   },
   {
+    "spec": "healthcare",
     "method": "POST",
-    "path": "/2024-04-01/change/medicalnetwork/institutionalclaims/v1/submission",
+    "path": "/change/medicalnetwork/institutionalclaims/v1/submission",
     "summary": "",
     "description": "Submit an 837I institutional claim in JSON format",
+    "base_url": "https://healthcare.us.stedi.com/2024-04-01",
     "url": "https://healthcare.us.stedi.com/2024-04-01/change/medicalnetwork/institutionalclaims/v1/submission",
     "headers": {
       "Authorization": "YOUR_API_KEY_HERE",
@@ -104,109 +137,112 @@
     "query_params": {},
     "path_params": {},
     "body": {
-      "usageIndicator": "T",
-      "tradingPartnerName": "EXAMPLE PAYER",
-      "tradingPartnerServiceId": "123456789",
-      "submitter": {
-        "organizationName": "EXAMPLE",
-        "contactInformation": {
-          "name": "EXAMPLE CONTACT",
-          "phoneNumber": "5551234567"
-        },
-        "taxId": "123456789"
-      },
-      "receiver": {
-        "organizationName": "EXAMPLE"
-      },
-      "subscriber": {
-        "memberId": "123456789",
-        "paymentResponsibilityLevelCode": "P",
-        "firstName": "EXAMPLE",
-        "lastName": "EXAMPLE",
-        "gender": "M",
-        "dateOfBirth": "19800101",
-        "address": {
-          "address1": "123 MAIN ST",
-          "city": "ANYTOWN",
-          "state": "NY",
-          "postalCode": "100011234"
-        }
-      },
       "claimInformation": {
-        "claimFilingCode": "ZZ",
-        "patientControlNumber": "123456",
-        "claimChargeAmount": "100.00",
-        "placeOfServiceCode": "11",
-        "claimFrequencyCode": "0",
-        "planParticipationCode": "C",
         "benefitsAssignmentCertificationIndicator": "Y",
-        "releaseInformationCode": "Y",
-        "principalDiagnosis": {
-          "qualifierCode": "ABK",
-          "principalDiagnosisCode": "Z0000"
+        "claimChargeAmount": "500.00",
+        "claimCodeInformation": {
+          "admissionSourceCode": "9",
+          "admissionTypeCode": "3",
+          "patientStatusCode": "30"
         },
+        "claimDateInformation": {
+          "admissionDateAndHour": "202409091000",
+          "statementBeginDate": "20241015",
+          "statementEndDate": "20241015"
+        },
+        "claimFilingCode": "ZZ",
+        "claimFrequencyCode": "0",
+        "patientControlNumber": "<YOUR-CLAIM-ID>",
+        "placeOfServiceCode": "11",
+        "planParticipationCode": "C",
+        "principalDiagnosis": {
+          "principalDiagnosisCode": "R45851",
+          "qualifierCode": "ABK"
+        },
+        "releaseInformationCode": "Y",
         "serviceLines": [
           {
             "assignedNumber": "0",
-            "serviceDate": "20240101",
-            "serviceDateEnd": "20240101",
-            "lineItemControlNumber": "111222333",
             "institutionalService": {
-              "serviceLineRevenueCode": "0450",
-              "lineItemChargeAmount": "100.00",
+              "lineItemChargeAmount": "500.00",
               "measurementUnit": "UN",
-              "serviceUnitCount": "1",
+              "procedureCode": "H0001",
               "procedureIdentifier": "HC",
-              "procedureCode": "99213"
-            }
+              "serviceLineRevenueCode": "0800",
+              "serviceUnitCount": "1"
+            },
+            "lineItemControlNumber": "111222333",
+            "serviceDate": "20241015",
+            "serviceDateEnd": "20241015"
           }
-        ],
-        "claimCodeInformation": {
-          "admissionTypeCode": "1",
-          "admissionSourceCode": "7",
-          "patientStatusCode": "01"
-        },
-        "claimDateInformation": {
-          "admissionDateAndHour": "202401010800",
-          "statementBeginDate": "20240101",
-          "statementEndDate": "20240101"
-        }
+        ]
       },
+      "controlNumber": "123456789",
       "providers": [
         {
-          "providerType": "BillingProvider",
-          "npi": "1932808896",
-          "employerId": "123456789",
-          "organizationName": "EXAMPLE BILLING PROVIDER",
           "address": {
-            "address1": "123 BILLING ST",
-            "city": "ANYTOWN",
-            "state": "NY",
-            "postalCode": "10001"
+            "address1": "123 Mulberry Street",
+            "city": "Seattle",
+            "postalCode": "111135272",
+            "state": "WA"
           },
           "contactInformation": {
-            "name": "EXAMPLE BILLING PROVIDER",
-            "phoneNumber": "5551234567"
-          }
+            "name": "Test Facility",
+            "phoneNumber": "2065551234"
+          },
+          "employerId": "123456789",
+          "npi": "1999999976",
+          "organizationName": "Test Facility",
+          "providerType": "BillingProvider"
         },
         {
-          "providerType": "AttendingProvider",
-          "npi": "1932808896",
+          "contactInformation": {
+            "name": "name"
+          },
           "firstName": "Doctor",
           "lastName": "Provider",
-          "contactInformation": {
-            "name": "Doctor Provider"
-          }
+          "npi": "1999999976",
+          "providerType": "AttendingProvider"
         }
-      ]
+      ],
+      "receiver": {
+        "organizationName": "UnitedHealthcare"
+      },
+      "submitter": {
+        "contactInformation": {
+          "name": "Test Facility",
+          "phoneNumber": "2225551234"
+        },
+        "organizationName": "Test Facility",
+        "taxId": "123456789"
+      },
+      "subscriber": {
+        "address": {
+          "address1": "1234 Some St",
+          "city": "Buckeye",
+          "postalCode": "85326",
+          "state": "AZ"
+        },
+        "dateOfBirth": "19000101",
+        "firstName": "JANE",
+        "gender": "F",
+        "lastName": "DOE",
+        "memberId": "98765",
+        "paymentResponsibilityLevelCode": "P"
+      },
+      "tradingPartnerName": "UnitedHealthcare",
+      "tradingPartnerServiceId": "87726",
+      "usageIndicator": "T"
     }
   },
   {
+    "spec": "healthcare",
     "method": "POST",
     "path": "/change/medicalnetwork/professionalclaims/v3/raw-x12-submission",
     "summary": "",
     "description": "Submit an 837P professional claim in raw X12 EDI format",
-    "url": "https://healthcare.us.stedi.com/change/medicalnetwork/professionalclaims/v3/raw-x12-submission",
+    "base_url": "https://healthcare.us.stedi.com/2024-04-01",
+    "url": "https://healthcare.us.stedi.com/2024-04-01/change/medicalnetwork/professionalclaims/v3/raw-x12-submission",
     "headers": {
       "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
@@ -214,15 +250,17 @@
     "query_params": {},
     "path_params": {},
     "body": {
-      "x12": "example"
+      "x12": "ISA*00*          *00*          *ZZ*574183004559   *ZZ*STEDITEST      *260213*2039*^*00501*000000039*0*T*>~GS*HC*574183004559*STEDITEST*20260213*203918*39*X*005010X222A1~ST*837*0001*005010X222A1~BHT*0019*00*01KHCBK84E40QQYJVXA5VVXG54*20260213*2038*CH~NM1*41*2*Test Data Health Services, Inc.*****46*123435~PER*IC**TE*5552223333~NM1*40*2*Cigna*****46*6400~HL*1**20*1~PRV*BI*PXC*2084P0800X~NM1*85*2*Therapy Associates*****XX*1999999984~N3*123 Some St*Floor 1~N4*A City*NY*123450000~REF*EI*123456789~PER*IC*Test Data Health Services, Inc.*TE*5553334444~HL*2*1*22*0~SBR*P*18*3335555******CI~NM1*IL*1*Anon*John****MI*U7777788888~N3*2222 Random St~N4*A City*NY*123450000~DMG*D8*20000101*M~NM1*PR*2*Cigna*****PI*6400~CLM*123456789*109.2***02>B>1*Y*A*Y*Y~HI*ABK>F1111~NM1*77*2*Smith Associates~N3*1234 Other St~N4*A City*NY*123450000~LX*1~SV1*HC>90837>95*109.2*UN*1***1~DTP*472*D8*20240101~REF*6R*111222333~SE*29*0001~GE*1*39~IEA*1*000000039~"
     }
   },
   {
+    "spec": "healthcare",
     "method": "POST",
     "path": "/change/medicalnetwork/professionalclaims/v3/submission",
     "summary": "",
     "description": "Submit an 837P professional claim in JSON format",
-    "url": "https://healthcare.us.stedi.com/change/medicalnetwork/professionalclaims/v3/submission",
+    "base_url": "https://healthcare.us.stedi.com/2024-04-01",
+    "url": "https://healthcare.us.stedi.com/2024-04-01/change/medicalnetwork/professionalclaims/v3/submission",
     "headers": {
       "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
@@ -231,111 +269,154 @@
     "path_params": {},
     "body": {
       "billing": {
-        "npi": "1932808896",
-        "organizationName": "EXAMPLE BILLING PROVIDER",
-        "employerId": "123456789",
         "address": {
-          "address1": "123 BILLING ST",
-          "city": "ANYTOWN",
-          "state": "NY",
-          "postalCode": "10001"
-        }
+          "address1": "123 Some St",
+          "address2": "Floor 1",
+          "city": "A City",
+          "postalCode": "123450000",
+          "state": "NY"
+        },
+        "contactInformation": {
+          "name": "Test Data Health Services, Inc.",
+          "phoneNumber": "5553334444"
+        },
+        "employerId": "123456789",
+        "npi": "1999999984",
+        "organizationName": "Therapy Associates",
+        "providerType": "BillingProvider",
+        "taxonomyCode": "2084P0800X"
       },
       "claimInformation": {
-        "benefitsAssignmentCertificationIndicator": "N",
-        "claimChargeAmount": "example",
-        "claimFilingCode": "11",
+        "benefitsAssignmentCertificationIndicator": "Y",
+        "claimChargeAmount": "109.20",
+        "claimFilingCode": "CI",
         "claimFrequencyCode": "1",
         "healthCareCodeInformation": [
           {
-            "diagnosisCode": "example",
-            "diagnosisTypeCode": "BK"
+            "diagnosisCode": "F1111",
+            "diagnosisTypeCode": "ABK"
           }
         ],
-        "patientControlNumber": "123456",
-        "placeOfServiceCode": "01",
+        "patientControlNumber": "<YOUR-CLAIM-ID>",
+        "placeOfServiceCode": "02",
         "planParticipationCode": "A",
-        "releaseInformationCode": "I",
+        "releaseInformationCode": "Y",
+        "serviceFacilityLocation": {
+          "address": {
+            "address1": "1234 Other St",
+            "city": "A City",
+            "postalCode": "123450000",
+            "state": "NY"
+          },
+          "npi": "1999999984",
+          "organizationName": "Smith Associates"
+        },
         "serviceLines": [
           {
             "professionalService": {
               "compositeDiagnosisCodePointers": {
                 "diagnosisCodePointers": [
-                  "example"
+                  "1"
                 ]
               },
-              "lineItemChargeAmount": "example",
+              "lineItemChargeAmount": "109.20",
               "measurementUnit": "UN",
-              "procedureCode": "example",
-              "procedureIdentifier": "ER",
-              "serviceUnitCount": "example"
+              "procedureCode": "90837",
+              "procedureIdentifier": "HC",
+              "procedureModifiers": [
+                "95"
+              ],
+              "serviceUnitCount": "1"
+            },
+            "providerControlNumber": "111222333",
+            "renderingProvider": {
+              "firstName": "Jane",
+              "lastName": "Smith",
+              "npi": "1999999984",
+              "providerType": "RenderingProvider",
+              "taxonomyCode": "111YP2000X"
             },
             "serviceDate": "20240101"
           }
         ],
-        "signatureIndicator": "N"
+        "signatureIndicator": "Y"
       },
       "receiver": {
-        "organizationName": "EXAMPLE"
+        "organizationName": "Cigna"
       },
       "submitter": {
-        "organizationName": "EXAMPLE SUBMITTER",
         "contactInformation": {
-          "name": "EXAMPLE CONTACT",
-          "phoneNumber": "5551234567"
-        }
+          "name": "Test Data Health Services, Inc.",
+          "phoneNumber": "5552223333"
+        },
+        "organizationName": "Test Data Health Services, Inc.",
+        "submitterIdentification": "<YOUR-SUBMITTER-ID>"
       },
       "subscriber": {
-        "dateOfBirth": "19800101",
-        "gender": "M",
         "address": {
-          "address1": "123 MAIN ST",
-          "city": "ANYTOWN",
-          "state": "NY",
-          "postalCode": "10001"
-        }
+          "address1": "2222 Random St",
+          "city": "A City",
+          "postalCode": "123450000",
+          "state": "NY"
+        },
+        "dateOfBirth": "20000101",
+        "firstName": "John",
+        "gender": "M",
+        "groupNumber": "3335555",
+        "lastName": "Anon",
+        "memberId": "U7777788888",
+        "paymentResponsibilityLevelCode": "P",
+        "subscriberGroupName": "Cigna"
       },
-      "tradingPartnerServiceId": "123456789"
+      "tradingPartnerName": "Cigna",
+      "tradingPartnerServiceId": "6400",
+      "usageIndicator": "T"
     }
   },
   {
+    "spec": "healthcare",
     "method": "GET",
-    "path": "/change/medicalnetwork/reports/v2/123456789/277",
+    "path": "/change/medicalnetwork/reports/v2/d567c2ae-f073-4725-8b8c-06c473b738a6/277",
     "summary": "",
     "description": "Retrieve a 277CA claim acknowledgment in JSON format",
-    "url": "https://healthcare.us.stedi.com/change/medicalnetwork/reports/v2/123456789/277",
+    "base_url": "https://healthcare.us.stedi.com/2024-04-01",
+    "url": "https://healthcare.us.stedi.com/2024-04-01/change/medicalnetwork/reports/v2/d567c2ae-f073-4725-8b8c-06c473b738a6/277",
     "headers": {
       "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
     },
     "query_params": {},
     "path_params": {
-      "transactionId": "123456789"
+      "transactionId": "d567c2ae-f073-4725-8b8c-06c473b738a6"
     },
     "body": null
   },
   {
+    "spec": "healthcare",
     "method": "GET",
-    "path": "/change/medicalnetwork/reports/v2/123456789/835",
+    "path": "/change/medicalnetwork/reports/v2/d567c2ae-f073-4725-8b8c-06c473b738a6/835",
     "summary": "",
     "description": "Retrieve an 835 Electronic Remittance Advice (ERA) in JSON format",
-    "url": "https://healthcare.us.stedi.com/change/medicalnetwork/reports/v2/123456789/835",
+    "base_url": "https://healthcare.us.stedi.com/2024-04-01",
+    "url": "https://healthcare.us.stedi.com/2024-04-01/change/medicalnetwork/reports/v2/d567c2ae-f073-4725-8b8c-06c473b738a6/835",
     "headers": {
       "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
     },
     "query_params": {},
     "path_params": {
-      "transactionId": "123456789"
+      "transactionId": "d567c2ae-f073-4725-8b8c-06c473b738a6"
     },
     "body": null
   },
   {
+    "spec": "healthcare",
     "method": "POST",
     "path": "/coordination-of-benefits",
     "summary": "",
     "description": "Submit a coordination of benefits (COB) check in JSON format",
-    "url": "https://healthcare.us.stedi.com/coordination-of-benefits",
+    "base_url": "https://healthcare.us.stedi.com/2024-04-01",
+    "url": "https://healthcare.us.stedi.com/2024-04-01/coordination-of-benefits",
     "headers": {
       "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
@@ -343,24 +424,36 @@
     "query_params": {},
     "path_params": {},
     "body": {
-      "encounter": {},
+      "dependent": {
+        "dateOfBirth": "2002-12-31",
+        "firstName": "Jordan",
+        "lastName": "Doe"
+      },
+      "encounter": {
+        "dateOfService": "2024-08-02",
+        "serviceTypeCode": "30"
+      },
       "provider": {
-        "npi": "example"
+        "npi": "1999999984",
+        "organizationName": "ACME Health Services"
       },
       "subscriber": {
-        "dateOfBirth": "20240101",
-        "firstName": "EXAMPLE",
-        "lastName": "EXAMPLE"
+        "dateOfBirth": "1985-05-27",
+        "firstName": "John",
+        "lastName": "Doe",
+        "memberId": "W000000000"
       },
-      "tradingPartnerServiceId": "123456789"
+      "tradingPartnerServiceId": "SOMEID"
     }
   },
   {
+    "spec": "healthcare",
     "method": "POST",
     "path": "/dental-claims/raw-x12-submission",
     "summary": "",
     "description": "Submit an 837D dental claim in raw X12 EDI format",
-    "url": "https://healthcare.us.stedi.com/dental-claims/raw-x12-submission",
+    "base_url": "https://healthcare.us.stedi.com/2024-04-01",
+    "url": "https://healthcare.us.stedi.com/2024-04-01/dental-claims/raw-x12-submission",
     "headers": {
       "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
@@ -368,15 +461,17 @@
     "query_params": {},
     "path_params": {},
     "body": {
-      "x12": "example"
+      "x12": "ISA*00*          *00*          *ZZ*574183004559   *ZZ*STEDITEST      *260213*2050*^*00501*000000042*0*T*>~GS*HC*574183004559*STEDITEST*20260213*205048*42*X*005010X224A2~ST*837*0001*005010X224A2~BHT*0019*00*01KHCCA4V6K00NFPX588G859SJ*20260213*2050*CH~NM1*41*2*ABA Inc*****46*1234567~PER*IC*BILLING DEPARTMENT*TE*3131234567~NM1*40*2*United HealthCare Dental*****46*52133~HL*1**20*1~PRV*BI*PXC*106S00000X~NM1*85*2*ABA Inc*****XX*1999999992~N3*ABA Inc 123 Some St~N4*Denver*CO*802383000~REF*EI*123456789~PER*IC*ABA Inc*TE*3134893157~HL*2*1*22*0~SBR*P*18*1234567890******FI~NM1*IL*1*Doe*John****MI*123412345~N3*1234 Some St~N4*Buckeye*AZ*85326~DMG*D8*20180615*F~NM1*PR*2*United HealthCare Dental*****PI*52133~N3*PO Box 7000~N4*Camden*SC*29000~CLM*12345*832***12>B>1*Y*A*Y*Y~DN2*3*E****JP~REF*G1*20231010012345678~HI*ABK>K081~NM1*82*1*Doe*Jane****XX*1999999992~PRV*PE*PXC*106S00000X~LX*1~SV3*AD>D7140*832**1>2*I*2*****1~TOO*JP*3*M>O~DTP*472*D8*20230428~REF*6R*a0UDo000000dd2dMAA~NM1*82*1*Doe*Jane****XX*1999999992~PRV*PE*PXC*122300000X~SE*35*0001~GE*1*42~IEA*1*000000042~"
     }
   },
   {
+    "spec": "healthcare",
     "method": "POST",
     "path": "/dental-claims/submission",
     "summary": "",
     "description": "Submit an 837D dental claim in JSON format",
-    "url": "https://healthcare.us.stedi.com/dental-claims/submission",
+    "base_url": "https://healthcare.us.stedi.com/2024-04-01",
+    "url": "https://healthcare.us.stedi.com/2024-04-01/dental-claims/submission",
     "headers": {
       "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
@@ -384,72 +479,203 @@
     "query_params": {},
     "path_params": {},
     "body": {
-      "billing": {},
+      "billing": {
+        "address": {
+          "address1": "ABA Inc 123 Some St",
+          "city": "Denver",
+          "postalCode": "802383000",
+          "state": "CO"
+        },
+        "contactInformation": {
+          "name": "ABA Inc",
+          "phoneNumber": "3134893157"
+        },
+        "employerId": "123456789",
+        "npi": "1999999992",
+        "organizationName": "ABA Inc",
+        "providerType": "BillingProvider",
+        "taxonomyCode": "106S00000X"
+      },
       "claimInformation": {
-        "benefitsAssignmentCertificationIndicator": "N",
-        "claimChargeAmount": "example",
+        "benefitsAssignmentCertificationIndicator": "Y",
+        "claimChargeAmount": "832.00",
+        "claimFilingCode": "FI",
         "claimFrequencyCode": "1",
-        "patientControlNumber": "123456",
-        "placeOfServiceCode": "01",
-        "releaseInformationCode": "I",
+        "claimSupplementalInformation": {
+          "priorAuthorizationNumber": "20231010012345678"
+        },
+        "healthCareCodeInformation": [
+          {
+            "diagnosisCode": "K08101",
+            "diagnosisTypeCode": "ABK"
+          }
+        ],
+        "patientControlNumber": "<YOUR-CLAIM-ID>",
+        "placeOfServiceCode": "12",
+        "planParticipationCode": "A",
+        "releaseInformationCode": "Y",
+        "serviceFacilityLocation": {
+          "address": {
+            "address1": "ABA Inc 123 Some St",
+            "city": "Denver",
+            "postalCode": "802383100",
+            "state": "CO"
+          },
+          "npi": "1999999992",
+          "organizationName": "ABA Inc",
+          "phoneNumber": "3131234567"
+        },
         "serviceLines": [
           {
             "dentalService": {
-              "lineItemChargeAmount": "example",
-              "procedureCode": "example"
-            }
+              "compositeDiagnosisCodePointers": {
+                "diagnosisCodePointers": [
+                  "1"
+                ]
+              },
+              "lineItemChargeAmount": "832.00",
+              "oralCavityDesignation": [
+                "1",
+                "2"
+              ],
+              "placeOfServiceCode": "12",
+              "procedureCode": "D7140",
+              "procedureCount": 2,
+              "prosthesisCrownOrInlayCode": "I"
+            },
+            "providerControlNumber": "a0UDo000000dd2dMAA",
+            "renderingProvider": {
+              "firstName": "Jane",
+              "lastName": "Doe",
+              "npi": "1999999992",
+              "taxonomyCode": "122300000X"
+            },
+            "serviceDate": "20230428",
+            "teethInformation": [
+              {
+                "toothCode": "3",
+                "toothSurfaceCodes": [
+                  "M",
+                  "O"
+                ]
+              }
+            ]
           }
         ],
-        "signatureIndicator": "N"
+        "signatureIndicator": "Y",
+        "toothStatus": [
+          {
+            "toothNumber": "3",
+            "toothStatusCode": "E"
+          }
+        ]
+      },
+      "payerAddress": {
+        "address1": "PO Box 7000",
+        "city": "Camden",
+        "postalCode": "29000",
+        "state": "SC"
       },
       "receiver": {
-        "organizationName": "EXAMPLE"
+        "organizationName": "United HealthCare Dental"
+      },
+      "rendering": {
+        "firstName": "Jane",
+        "lastName": "Doe",
+        "npi": "1999999992",
+        "providerType": "RenderingProvider",
+        "taxonomyCode": "106S00000X"
       },
       "submitter": {
-        "contactInformation": {}
+        "contactInformation": {
+          "name": "BILLING DEPARTMENT",
+          "phoneNumber": "3131234567"
+        },
+        "organizationName": "ABA Inc",
+        "submitterIdentification": "<YOUR-SUBMITTER-ID"
       },
-      "subscriber": {},
-      "tradingPartnerServiceId": "123456789"
+      "subscriber": {
+        "address": {
+          "address1": "1234 Some St",
+          "city": "Buckeye",
+          "postalCode": "85326",
+          "state": "AZ"
+        },
+        "dateOfBirth": "20180615",
+        "firstName": "John",
+        "gender": "F",
+        "groupNumber": "1234567890",
+        "lastName": "Doe",
+        "memberId": "123412345",
+        "paymentResponsibilityLevelCode": "P"
+      },
+      "tradingPartnerName": "United HealthCare Dental",
+      "tradingPartnerServiceId": "52133",
+      "usageIndicator": "T"
     }
   },
   {
+    "spec": "healthcare",
+    "method": "GET",
+    "path": "/electronic-remittance-advice/b12a1241-3312-a3dc-aed2-1a30ca50cd63/pdf",
+    "summary": "",
+    "description": "Retrieve the generated PDF of an 835 Electronic Remittance Advice (ERA).",
+    "base_url": "https://healthcare.us.stedi.com/2024-04-01",
+    "url": "https://healthcare.us.stedi.com/2024-04-01/electronic-remittance-advice/b12a1241-3312-a3dc-aed2-1a30ca50cd63/pdf",
+    "headers": {
+      "Authorization": "YOUR_API_KEY_HERE",
+      "Content-Type": "application/json"
+    },
+    "query_params": {},
+    "path_params": {
+      "transactionId": "b12a1241-3312-a3dc-aed2-1a30ca50cd63"
+    },
+    "body": null
+  },
+  {
+    "spec": "healthcare",
     "method": "GET",
     "path": "/export/pdf",
     "summary": "",
     "description": "Retrieve a Stedi generatedCMS-1500 Claim Form PDF for a submitted 837P (professional) claim by business identifier",
-    "url": "https://healthcare.us.stedi.com/export/pdf",
+    "base_url": "https://healthcare.us.stedi.com/2024-04-01",
+    "url": "https://healthcare.us.stedi.com/2024-04-01/export/pdf",
     "headers": {
       "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
     },
     "query_params": {
-      "businessId": "123456789"
+      "businessId": "a10b1111-7233-484c-8dee-b240c590c767"
     },
     "path_params": {},
     "body": null
   },
   {
+    "spec": "healthcare",
     "method": "GET",
-    "path": "/export/123456789/1500/pdf",
+    "path": "/export/a10b1111-7233-484c-8dee-b240c590c767/1500/pdf",
     "summary": "",
     "description": "Retrieve the generated CMS-1500 Claim Form PDF for a submitted 837P professional claim",
-    "url": "https://healthcare.us.stedi.com/export/123456789/1500/pdf",
+    "base_url": "https://healthcare.us.stedi.com/2024-04-01",
+    "url": "https://healthcare.us.stedi.com/2024-04-01/export/a10b1111-7233-484c-8dee-b240c590c767/1500/pdf",
     "headers": {
       "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
     },
     "query_params": {},
     "path_params": {
-      "transactionId": "123456789"
+      "transactionId": "a10b1111-7233-484c-8dee-b240c590c767"
     },
     "body": null
   },
   {
+    "spec": "healthcare",
     "method": "POST",
     "path": "/insurance-discovery/check/v1",
     "summary": "",
     "description": "Submit an insurance discovery check in JSON format",
-    "url": "https://healthcare.us.stedi.com/insurance-discovery/check/v1",
+    "base_url": "https://healthcare.us.stedi.com/2024-04-01",
+    "url": "https://healthcare.us.stedi.com/2024-04-01/insurance-discovery/check/v1",
     "headers": {
       "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
@@ -457,53 +683,73 @@
     "query_params": {},
     "path_params": {},
     "body": {
+      "encounter": {
+        "beginningDateOfService": "20240326",
+        "endDateOfService": "20240326"
+      },
       "provider": {
-        "npi": "example"
+        "npi": "1999999984"
       },
       "subscriber": {
-        "firstName": "EXAMPLE",
-        "lastName": "EXAMPLE"
+        "address": {
+          "address1": "123 Main St",
+          "city": "Springfield",
+          "postalCode": "62701",
+          "state": "IL"
+        },
+        "dateOfBirth": "19800101",
+        "firstName": "John",
+        "gender": "M",
+        "lastName": "Smith",
+        "middleName": "Robert",
+        "ssn": "123456789"
       }
     }
   },
   {
+    "spec": "healthcare",
     "method": "GET",
-    "path": "/insurance-discovery/check/v1/123456789",
+    "path": "/insurance-discovery/check/v1/12345678-abcd-4321-efgh-987654321abc",
     "summary": "",
     "description": "Retrieve insurance discovery check results by `discoveryId`",
-    "url": "https://healthcare.us.stedi.com/insurance-discovery/check/v1/123456789",
+    "base_url": "https://healthcare.us.stedi.com/2024-04-01",
+    "url": "https://healthcare.us.stedi.com/2024-04-01/insurance-discovery/check/v1/12345678-abcd-4321-efgh-987654321abc",
     "headers": {
       "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
     },
     "query_params": {},
     "path_params": {
-      "discoveryId": "123456789"
+      "discoveryId": "12345678-abcd-4321-efgh-987654321abc"
     },
     "body": null
   },
   {
+    "spec": "healthcare",
     "method": "GET",
-    "path": "/payer/123456789",
+    "path": "/payer/QDTRP",
     "summary": "",
     "description": "Retrieve a single payer record by its Stedi payer ID.",
-    "url": "https://healthcare.us.stedi.com/payer/123456789",
+    "base_url": "https://healthcare.us.stedi.com/2024-04-01",
+    "url": "https://healthcare.us.stedi.com/2024-04-01/payer/QDTRP",
     "headers": {
       "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
     },
     "query_params": {},
     "path_params": {
-      "stediId": "123456789"
+      "stediId": "QDTRP"
     },
     "body": null
   },
   {
+    "spec": "healthcare",
     "method": "GET",
     "path": "/payers",
     "summary": "",
     "description": "List Stedi's supported payers in JSON format",
-    "url": "https://healthcare.us.stedi.com/payers",
+    "base_url": "https://healthcare.us.stedi.com/2024-04-01",
+    "url": "https://healthcare.us.stedi.com/2024-04-01/payers",
     "headers": {
       "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
@@ -513,11 +759,13 @@
     "body": null
   },
   {
+    "spec": "healthcare",
     "method": "GET",
     "path": "/payers/csv",
     "summary": "",
     "description": "List Stedi's supported payers in CSV format",
-    "url": "https://healthcare.us.stedi.com/payers/csv",
+    "base_url": "https://healthcare.us.stedi.com/2024-04-01",
+    "url": "https://healthcare.us.stedi.com/2024-04-01/payers/csv",
     "headers": {
       "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
@@ -527,11 +775,13 @@
     "body": null
   },
   {
+    "spec": "healthcare",
     "method": "GET",
     "path": "/payers/search",
     "summary": "",
     "description": "Search for payers by name, ID, or alias.",
-    "url": "https://healthcare.us.stedi.com/payers/search",
+    "base_url": "https://healthcare.us.stedi.com/2024-04-01",
+    "url": "https://healthcare.us.stedi.com/2024-04-01/payers/search",
     "headers": {
       "Authorization": "YOUR_API_KEY_HERE",
       "Content-Type": "application/json"
